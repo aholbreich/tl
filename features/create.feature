@@ -9,20 +9,21 @@ Feature: Create a task
 
   Scenario: Creating a task records it with default status open
     Given no tasks exist
-    When the developer runs `tl create --title "Add login form validation"`
+    When the developer runs `tl create "Add login form validation"`
     Then a new task with title "Add login form validation" exists
     And the new task has status "open"
     And the new task has no dependencies
     And an event "created" is recorded for the new task
 
-  Scenario: Creating a task applies title, priority, and tags
-    When the developer runs `tl create --title "Refactor auth error messages" --priority low --tag frontend --tag auth`
+  Scenario: Creating a task applies type, priority, and tags
+    When the developer runs `tl create "Refactor auth error messages" -t chore --priority low --tag frontend --tag auth`
     Then a new task with title "Refactor auth error messages" exists
+    And the new task has type "chore"
     And the new task has priority "low"
     And the new task has tags "frontend" and "auth"
 
   Scenario: Creating a task with JSON output returns the new task object
-    When the developer runs `tl create --title "Add login form validation" --json`
+    When the developer runs `tl create "Add login form validation" --json`
     Then the JSON output contains the new task identifier
     And the JSON output contains title "Add login form validation"
     And the JSON output contains status "open"
@@ -46,17 +47,17 @@ Feature: Create a task
 
   Scenario: Creating a task with a long-form description stores it under Description
     Given no tasks exist
-    When the developer runs `tl create --title "Add login form validation" --description "Validate email format and require a password."`
+    When the developer runs `tl create "Add login form validation" --description "Validate email format and require a password."`
     Then a new task with title "Add login form validation" exists
     And the new task description is "Validate email format and require a password."
 
   Scenario: Creating a task with the -d short flag stores the description
     Given no tasks exist
-    When the developer runs `tl create -d "Capture login attempts metric." "Add login telemetry"`
+    When the developer runs `tl create "Add login telemetry" -d "Capture login attempts metric."`
     Then a new task with title "Add login telemetry" exists
     And the new task description is "Capture login attempts metric."
 
   Scenario: Creating a task with a description exposes the body in JSON
-    When the developer runs `tl create --title "Add login form validation" -d "Validate email format." --json`
+    When the developer runs `tl create "Add login form validation" -d "Validate email format." --json`
     Then the JSON output contains the new task identifier
     And the JSON output body contains "Validate email format."

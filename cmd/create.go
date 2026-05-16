@@ -14,24 +14,19 @@ import (
 
 func newCreateCmd() *cobra.Command {
 	var (
-		title       string
 		description string
 		priority    string
+		taskType    string
 		tags        []string
 		actor       string
 		asJSON      bool
 	)
 	c := &cobra.Command{
-		Use:   "create [title]",
+		Use:   "create [title] [options]",
 		Short: "Create a new task in the ledger",
-		Args:  cobra.MaximumNArgs(1),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if title == "" && len(args) > 0 {
-				title = args[0]
-			}
-			if title == "" {
-				return fmt.Errorf("a task title is required (positional argument or --title)")
-			}
+			title := args[0]
 			ledger, err := requireLedger()
 			if err != nil {
 				return err
@@ -47,6 +42,7 @@ func newCreateCmd() *cobra.Command {
 				Title:     title,
 				Status:    "open",
 				Priority:  priority,
+				Type:      taskType,
 				CreatedAt: now,
 				UpdatedAt: now,
 				CreatedBy: actor,
@@ -79,9 +75,9 @@ func newCreateCmd() *cobra.Command {
 			return nil
 		},
 	}
-	c.Flags().StringVarP(&title, "title", "t", "", "Task title (required)")
 	c.Flags().StringVarP(&description, "description", "d", "", "Task description (stored under ## Description)")
 	c.Flags().StringVarP(&priority, "priority", "p", "medium", "Task priority (low|medium|high)")
+	c.Flags().StringVarP(&taskType, "type", "t", "", "Task type")
 	c.Flags().StringArrayVar(&tags, "tag", nil, "Tag to apply (repeatable)")
 	c.Flags().StringVar(&actor, "actor", "human", "Creator actor")
 	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output")

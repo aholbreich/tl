@@ -98,6 +98,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	// create.feature outcomes
 	ctx.Step(`^a new task with title "([^"]*)" exists$`, w.newTaskWithTitleExists)
 	ctx.Step(`^the new task has status "([^"]*)"$`, w.newTaskHasStatus)
+	ctx.Step(`^the new task has type "([^"]*)"$`, w.newTaskHasType)
 	ctx.Step(`^the new task has priority "([^"]*)"$`, w.newTaskHasPriority)
 	ctx.Step(`^the new task has tags "([^"]*)" and "([^"]*)"$`, w.newTaskHasTwoTags)
 	ctx.Step(`^the new task has no dependencies$`, w.newTaskHasNoDependencies)
@@ -253,6 +254,17 @@ func (w *world) newTaskHasStatus(status string) error {
 	}
 	if t.Status != status {
 		return fmt.Errorf("task status is %q, expected %q", t.Status, status)
+	}
+	return nil
+}
+
+func (w *world) newTaskHasType(taskType string) error {
+	t, err := loadOnlyTask()
+	if err != nil {
+		return err
+	}
+	if t.Type != taskType {
+		return fmt.Errorf("task type is %q, expected %q", t.Type, taskType)
 	}
 	return nil
 }
@@ -577,7 +589,7 @@ func (w *world) runTl(args string) error {
 }
 
 // splitArgs splits a CLI argument string while honoring "double-quoted"
-// values (so titles with spaces survive `tl create --title "Add login form"`).
+// values (so titles with spaces survive `tl create "Add login form"`).
 func splitArgs(s string) []string {
 	var out []string
 	var cur strings.Builder

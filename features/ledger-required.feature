@@ -15,4 +15,4 @@ Feature: Require an initialized ledger
       | command                               |
       | list                                  |
       | show task-abc123                      |
-      | create --title "Add login validation" |
+      | create "Add login validation"         |
