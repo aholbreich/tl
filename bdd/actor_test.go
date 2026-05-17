@@ -2,9 +2,10 @@ package bdd
 
 import (
 	"fmt"
-	"github.com/cucumber/godog"
 	"os"
 	"time"
+
+	"github.com/cucumber/godog"
 
 	"github.com/aholbreich/taskledger/cmd"
 )
