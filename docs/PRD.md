@@ -112,7 +112,7 @@ on each feature.
 | `tl close`        | [features/close.feature](../features/close.feature)           |
 | `tl pending`      | [features/pending.feature](../features/pending.feature)       |
 | `tl resolve`      | [features/resolve.feature](../features/resolve.feature)       |
-| `tl prime`        | [features/prime.feature](../features/prime.feature)           |
+| `tl agents`       | [features/agents.feature](../features/agents.feature)         |
 
 User-visible flag reference lives in the [README](../README.md).
 

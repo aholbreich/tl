@@ -196,11 +196,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the note contains the message "([^"]*)"$`, w.noteContainsMessage)
 	ctx.Step(`^the note has a timestamp$`, w.noteHasTimestamp)
 
-	// prime.feature preconditions and outcomes
+	// agents.feature preconditions and outcomes
 	ctx.Step(`^the file "([^"]*)" exists with content "([^"]*)"$`, w.fileExistsWithContent)
 	ctx.Step(`^the file "([^"]*)" still has content "([^"]*)"$`, w.fileStillHasContent)
 	ctx.Step(`^the output contains a "([^"]*)" heading$`, w.outputContainsHeading)
 	ctx.Step(`^the output describes the ready, claim, show, note, and close steps$`, w.outputDescribesWorkflowSteps)
+	ctx.Step(`^the output formats task commands as Markdown code spans$`, w.outputFormatsCommandsAsMarkdownCodeSpans)
 }
 
 // --- init.feature support -------------------------------------------------
@@ -1110,7 +1111,7 @@ func (w *world) noteHasTimestamp() error {
 	return nil
 }
 
-// --- prime.feature support ------------------------------------------------
+// --- agents.feature support -----------------------------------------------
 
 func (w *world) fileExistsWithContent(path, content string) error {
 	return os.WriteFile(path, []byte(content), 0o644)
@@ -1139,6 +1140,21 @@ func (w *world) outputDescribesWorkflowSteps() error {
 	for _, command := range []string{"tl ready", "tl claim", "tl show", "tl note", "tl close"} {
 		if !strings.Contains(w.stdout.String(), command) {
 			return fmt.Errorf("output does not describe %s; got:\n%s", command, w.stdout.String())
+		}
+	}
+	return nil
+}
+
+func (w *world) outputFormatsCommandsAsMarkdownCodeSpans() error {
+	for _, command := range []string{
+		"`tl ready --json`",
+		"`tl claim <task-id> --actor <your-agent-name>`",
+		"`tl show <task-id>`",
+		"`tl note <task-id> --actor <your-agent-name> -m \"...\"`",
+		"`tl close <task-id> --actor <your-agent-name>`",
+	} {
+		if !strings.Contains(w.stdout.String(), command) {
+			return fmt.Errorf("output does not contain Markdown code span %s; got:\n%s", command, w.stdout.String())
 		}
 	}
 	return nil

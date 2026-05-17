@@ -160,10 +160,11 @@ Rejects blocked and already-done tasks.
     --json               Emit JSON output
 ```
 
-### `tl prime`
+### `tl agents`
 
 Print a recommended `AGENTS.md` snippet for TaskLedger-aware agents. The command
-writes only to stdout and never edits `AGENTS.md` for you.
+writes only to stdout and never edits `AGENTS.md` for you. Commands in the
+snippet are formatted as Markdown code spans, for example `tl ready --json`.
 
 ```
 (no flags)
@@ -202,7 +203,7 @@ The BDD suite runs features tagged `@implemented`.
 | `tl claim` | ✅ Implemented (auto actor resolution) |
 | `tl note` | ✅ Implemented |
 | `tl close` | ✅ Implemented |
-| `tl prime` | ✅ Implemented |
+| `tl agents` | ✅ Implemented |
 | Actor identity resolution | ✅ Implemented (`--actor` > `TL_ACTOR` > `ACTOR_NAME` > `BEADS_ACTOR` > auto-detect) |
 | Friendly missing-ledger hint | ✅ Implemented |
 | `tl dep remove` | Specified, pending |
