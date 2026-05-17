@@ -1,3 +1,4 @@
+@implemented
 Feature: Mark a task blocked by an external condition
   As an actor unable to make progress
   I want to mark a task blocked with a reason

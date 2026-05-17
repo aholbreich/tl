@@ -15,6 +15,7 @@ func initializeAgentsSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^the output contains a "([^"]*)" heading$`, w.outputContainsHeading)
 	ctx.Step(`^the output describes the ready, claim, show, note, and close steps$`, w.outputDescribesWorkflowSteps)
 	ctx.Step(`^the output formats task commands as Markdown code spans$`, w.outputFormatsCommandsAsMarkdownCodeSpans)
+	ctx.Step(`^the output contains these snippets:$`, w.outputContainsSnippets)
 }
 
 func (w *world) fileExistsWithContent(path, content string) error {
@@ -52,13 +53,32 @@ func (w *world) outputDescribesWorkflowSteps() error {
 func (w *world) outputFormatsCommandsAsMarkdownCodeSpans() error {
 	for _, command := range []string{
 		"`tl ready --json`",
-		"`tl claim <task-id> --actor <your-agent-name>`",
+		"`tl ready --tag <role> --json`",
 		"`tl show <task-id>`",
-		"`tl note <task-id> --actor <your-agent-name> -m \"...\"`",
-		"`tl close <task-id> --actor <your-agent-name>`",
+		"`tl history <task-id>`",
+		"`tl claim <task-id>`",
+		"`tl note <task-id> -m \"...\"`",
+		"`tl close <task-id>`",
+		"`tl cancel <task-id> -m \"<reason>\"`",
+		"`tl block <task-id> -m \"<blocker>\"`",
+		"`tl pending <task-id> --question \"...\"`",
+		"`tl release <task-id>`",
 	} {
 		if !strings.Contains(w.stdout.String(), command) {
 			return fmt.Errorf("output does not contain Markdown code span %s; got:\n%s", command, w.stdout.String())
+		}
+	}
+	return nil
+}
+
+func (w *world) outputContainsSnippets(table *godog.Table) error {
+	for rowIdx, row := range table.Rows[1:] {
+		if len(row.Cells) != 1 {
+			return fmt.Errorf("snippet row %d has %d cells, expected 1", rowIdx+1, len(row.Cells))
+		}
+		snippet := strings.TrimSpace(row.Cells[0].Value)
+		if !strings.Contains(w.stdout.String(), snippet) {
+			return fmt.Errorf("output does not contain snippet %q; got:\n%s", snippet, w.stdout.String())
 		}
 	}
 	return nil

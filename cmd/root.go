@@ -36,6 +36,8 @@ func NewRootCmd() *cobra.Command {
 	root.AddCommand(newAgentsCmd())
 	root.AddCommand(newReleaseCmd())
 	root.AddCommand(newStaleCmd())
+	root.AddCommand(newBlockCmd())
+	root.AddCommand(newUnblockCmd())
 	root.AddCommand(newPendingCmd())
 	return root
 }

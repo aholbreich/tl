@@ -107,6 +107,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	initializeNoteSteps(ctx, w)
 	initializeStaleSteps(ctx, w)
 	initializeAgentsSteps(ctx, w)
+	initializeBlockSteps(ctx, w)
 }
 
 // --- shared CLI invocation ------------------------------------------------

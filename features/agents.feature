@@ -13,6 +13,21 @@ Feature: Print recommended agent instructions
     And the output describes the ready, claim, show, note, and close steps
     And the output formats task commands as Markdown code spans
 
+  Scenario: Running agents includes the current coordination workflow
+    When the developer runs `tl agents`
+    Then the output contains these snippets:
+      | snippet                                                                   |
+      | Set `TL_ACTOR` once at the start of your session                            |
+      | `tl ready --tag <role> --json`                                              |
+      | `tl history <task-id>`                                                       |
+      | Re-run `tl claim <task-id>` periodically on long work                        |
+      | `tl cancel <task-id> -m "<reason>"`                                         |
+      | `tl block <task-id> -m "<blocker>"`                                         |
+      | `tl pending <task-id> --question "..."`                                     |
+      | `tl release <task-id>`                                                       |
+      | check the current `@implemented` set with `make bdd`                         |
+      | create a follow-up task with `tl create` rather than silently expanding scope |
+
   Scenario: Running agents does not modify any existing AGENTS.md
     Given the file "AGENTS.md" exists with content "# My Project"
     When the developer runs `tl agents`
