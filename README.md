@@ -3,12 +3,9 @@
 > A Git-native task ledger for humans and AI coding agents.
 
 TaskLedger (`tl`) stores tasks as Markdown files with YAML frontmatter inside
-your repository. The MVP is in progress: the implemented slice covers
-initialization, task creation, task listing, task detail display, JSON output
-for implemented read commands, creation events, and friendly setup errors.
-
-The broader product goal is dependency-aware ready queues, safe claim leases,
-stale claim detection, verification commands, and handoff notes.
+your repository, gives agents a dependency-aware ready queue, supports safe
+claim leases with automatic actor resolution, and records every change in an
+append-only event journal.
 
 No daemon. No hidden database. No automatic push. No AGENTS.md magic.
 
@@ -39,22 +36,23 @@ tl init                                                          # one-time per 
 tl create "Add login form validation"
 tl create "Refactor auth errors" -t chore -p low --tag auth
 tl list
-tl show task-abc
+tl show <id>                                                     # full id or bare short code
 ```
 
-Planned agent workflow:
+Agent workflow:
 
 ```sh
 tl ready --json                                                  # what's available?
-tl claim task-abc --actor claude-code:main                       # take a lease
-tl show task-abc                                                 # read the details
-tl note task-abc --actor claude-code:main --message "Initial implementation done."
-tl verify task-abc                                               # run the task's checks
-tl close task-abc --actor claude-code:main
+tl claim <id>                                                    # take a lease (actor auto-detected)
+tl show <id>                                                     # read the details
+tl note <id> -m "Initial implementation done."                   # record a handoff note
+tl verify <id>                                                   # run the task's checks (planned)
+tl close <id>                                                    # mark as done (planned)
 ```
 
-Only `init`, `create`, `list`, and `show` are implemented today. The rest of
-the planned workflow is specified under [`features/`](features/).
+Actor identity is resolved automatically: `--actor` flag > `TL_ACTOR` env >
+`ACTOR_NAME` env > `BEADS_ACTOR` env > agent auto-detection. Use `--actor`
+to override.
 
 ---
 
@@ -98,17 +96,60 @@ List every task in the ledger, sorted by priority then identifier.
 
 Show a task in detail. Human output includes the identifier, title, status,
 priority, dependencies, claim state, and Markdown body content such as notes.
+Accepts both full IDs (`task-k5g`) and bare short codes (`k5g`).
 
 ```
     --json               Emit JSON output
 ```
 
+### `tl ready`
+
+List tasks that are ready to be claimed. A task is ready when it is `open` (or
+`in_progress` with an expired claim), all dependencies are `done`, and no
+active claim exists.
+
+```
+    --json               Emit JSON output
+```
+
+### `tl claim TASK_ID`
+
+Claim a task with a time-limited lease. Sets status to `in_progress` and
+records claim expiry. Rejects if another actor holds an active claim (exit 5)
+or dependencies are unmet (exit 4). Uses the same actor resolution chain as
+`note`.
+
+```
+    --actor              Claiming actor (optional; auto-resolved if unset)
+    --ttl                Lease duration, e.g. 60m or 2h (default from config)
+    --json               Emit JSON output
+```
+
+### `tl dep add TASK_ID --on TASK_ID`
+
+Add a dependency link between tasks. Both tasks must exist (exit 3 if not).
+Idempotent — adding the same dependency twice is a no-op.
+
+```
+    --on                 Target task to depend on (required)
+```
+
+### `tl note TASK_ID`
+
+Append a timestamped note to a task's body under a `## Notes` section. Notes
+are the human-facing audit trail — use them for progress updates, handoff
+context, and decision records.
+
+```
+-m, --message            Note message (required)
+    --actor              Actor writing the note (optional; auto-resolved)
+```
+
 ### Not yet implemented
 
-`ready`, `dep add`, `dep remove`, `claim`, `release`, `stale`, `note`,
-`verify`, `close`, `pending`, `resolve`, `prime` — specified in
-[`features/`](features), implementation in progress. See
-[`docs/PRD.md`](docs/PRD.md) section 7 for the MVP command list.
+`verify`, `close`, `release`, `stale`, `dep remove`, `pending`, `resolve`,
+`prime` — specified in [`features/`](features), implementation in progress.
+See [`docs/PRD.md`](docs/PRD.md) §6 for the command index.
 
 ### Setup errors
 
@@ -128,15 +169,18 @@ The BDD suite runs features tagged `@implemented`.
 
 | Area | Status |
 |---|---|
-| `tl init` | Implemented |
-| `tl create` | Implemented |
-| `tl list` | Implemented |
-| `tl show` | Implemented |
-| Friendly missing-ledger hint | Implemented |
-| `tl ready` | Specified, pending |
-| `tl dep add` / `tl dep remove` | Specified, pending |
-| `tl claim` / `tl release` / `tl stale` | Specified, pending |
-| `tl note` | Specified, pending |
+| `tl init` | ✅ Implemented |
+| `tl create` | ✅ Implemented |
+| `tl list` | ✅ Implemented |
+| `tl show` | ✅ Implemented (bare short codes supported) |
+| `tl ready` | ✅ Implemented (stale-claim aware) |
+| `tl dep add` | ✅ Implemented |
+| `tl claim` | ✅ Implemented (auto actor resolution) |
+| `tl note` | ✅ Implemented |
+| Actor identity resolution | ✅ Implemented (`--actor` > `TL_ACTOR` > `ACTOR_NAME` > `BEADS_ACTOR` > auto-detect) |
+| Friendly missing-ledger hint | ✅ Implemented |
+| `tl dep remove` | Specified, pending |
+| `tl release` / `tl stale` | Specified, pending |
 | `tl verify` / `tl close` | Specified, pending |
 | `tl pending` / `tl resolve` | Specified, pending |
 | `tl prime` | Specified, pending |
