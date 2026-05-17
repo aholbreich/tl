@@ -160,6 +160,17 @@ Rejects blocked and already-done tasks.
     --json               Emit JSON output
 ```
 
+### `tl release TASK_ID`
+
+Voluntarily release a claim on a task, returning it to `open`. Only the
+claiming actor may release unless `--force` is used.
+
+```
+    --actor              Actor releasing the claim (optional; auto-resolved)
+    --force              Release even when another actor holds the claim
+    --json               Emit JSON output
+```
+
 ### `tl agents`
 
 Print a recommended `AGENTS.md` snippet for TaskLedger-aware agents. The command
@@ -172,7 +183,7 @@ snippet are formatted as Markdown code spans, for example `tl ready --json`.
 
 ### Not yet implemented
 
-`release`, `stale`, `dep remove`, `pending`, `resolve` — specified in
+`stale`, `dep remove`, `pending`, `resolve` — specified in
 [`features/`](features), implementation in progress. See [`docs/PRD.md`](docs/PRD.md)
 §6 for the command index.
 
@@ -203,11 +214,12 @@ The BDD suite runs features tagged `@implemented`.
 | `tl claim` | ✅ Implemented (auto actor resolution) |
 | `tl note` | ✅ Implemented |
 | `tl close` | ✅ Implemented |
+| `tl release` | ✅ Implemented |
 | `tl agents` | ✅ Implemented |
 | Actor identity resolution | ✅ Implemented (`--actor` > `TL_ACTOR` > `ACTOR_NAME` > `BEADS_ACTOR` > auto-detect) |
 | Friendly missing-ledger hint | ✅ Implemented |
 | `tl dep remove` | Specified, pending |
-| `tl release` / `tl stale` | Specified, pending |
+| `tl stale` | Specified, pending |
 | `tl pending` / `tl resolve` | Specified, pending |
 
 ---

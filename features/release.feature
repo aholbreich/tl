@@ -1,3 +1,4 @@
+@implemented
 Feature: Release a claim on a task
   As an actor stepping away from a task
   I want to clear my claim so others can pick it up
@@ -20,7 +21,7 @@ Feature: Release a claim on a task
     And "task-abc123" is still claimed by "claude-code:frontend"
 
   Scenario: Forcing release of a stale claim succeeds
-    Given a task "task-abc123" claimed by "claude-code:frontend" with an expired lease
-    When the developer runs `tl release task-abc123 --force`
+    Given a task "task-abc123" with an expired claim by "claude-code:frontend"
+    When the developer runs `tl release task-abc123 --actor human --force`
     Then "task-abc123" is not claimed
     And "task-abc123" has status "open"

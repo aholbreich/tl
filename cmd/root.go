@@ -34,6 +34,7 @@ func NewRootCmd() *cobra.Command {
 	root.AddCommand(newClaimCmd())
 	root.AddCommand(newCloseCmd())
 	root.AddCommand(newAgentsCmd())
+	root.AddCommand(newReleaseCmd())
 	return root
 }
 
