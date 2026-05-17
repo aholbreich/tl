@@ -1,32 +1,52 @@
 # Homebrew Formula for taskledger (tl)
 #
-# Install from source (HEAD):
-#   brew install --HEAD ./Formula/taskledger.rb
+# Install the latest stable release:
+#   brew install aholbreich/taskledger/taskledger
 #
-# After the first GitHub Release, stable installs work too:
-#   brew install taskledger         # from a tap
+# Install from source (HEAD):
+#   brew install --HEAD aholbreich/taskledger/taskledger
 #
 class Taskledger < Formula
   desc "Git-native task ledger for human and AI agent coordination"
   homepage "https://github.com/aholbreich/taskledger"
   license "MIT"
+  version "0.4.0"
+
+  # --- Platform-specific binary archives (stable release) ---
+  on_macos do
+    if Hardware::CPU.intel?
+      url "https://github.com/aholbreich/taskledger/releases/download/v#{version}/tl-darwin-amd64.tar.gz"
+      sha256 "REPLACE_WITH_DARWIN_AMD64_SHA256"
+    else
+      url "https://github.com/aholbreich/taskledger/releases/download/v#{version}/tl-darwin-arm64.tar.gz"
+      sha256 "REPLACE_WITH_DARWIN_ARM64_SHA256"
+    end
+  end
+  on_linux do
+    if Hardware::CPU.intel?
+      url "https://github.com/aholbreich/taskledger/releases/download/v#{version}/tl-linux-amd64.tar.gz"
+      sha256 "REPLACE_WITH_LINUX_AMD64_SHA256"
+    else
+      url "https://github.com/aholbreich/taskledger/releases/download/v#{version}/tl-linux-arm64.tar.gz"
+      sha256 "REPLACE_WITH_LINUX_ARM64_SHA256"
+    end
+  end
 
   # --- HEAD install (build from source) ---
   head "https://github.com/aholbreich/taskledger.git", branch: "main"
 
-  # --- Stable release (populate after first release) ---
-  # url "https://github.com/aholbreich/taskledger/archive/refs/tags/v0.4.0.tar.gz"
-  # sha256 "REPLACE_WITH_ACTUAL_SHA256"
-
   depends_on "go" => :build
 
   def install
-    ldflags = "-s -w -X main.version=#{version}"
-    system "go", "build", "-o", bin/"tl", "-ldflags", ldflags, "."
+    if build.head?
+      ldflags = "-s -w -X main.version=#{version}"
+      system "go", "build", "-o", bin/"tl", "-ldflags", ldflags, "."
+    else
+      bin.install "tl"
+    end
   end
 
   test do
-    # --version exits 0 and prints a version line.
     assert_match version.to_s, shell_output("#{bin}/tl --version")
   end
 end

@@ -11,7 +11,14 @@ No daemon. No hidden database. No automatic push. No AGENTS.md magic.
 
 ## Install
 
-From source (Go 1.25+):
+### Homebrew (macOS / Linux)
+
+```sh
+brew tap aholbreich/taskledger
+brew install taskledger
+```
+
+### From source
 
 ```sh
 git clone https://github.com/aholbreich/taskledger
