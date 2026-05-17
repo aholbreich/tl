@@ -74,3 +74,5 @@
 {"time":"2026-05-17T19:31:15Z","event":"note_added","task_id":"task-ol3","actor":"pi:codex"}
 {"time":"2026-05-17T19:31:15Z","event":"closed","task_id":"task-ol3","actor":"pi:codex"}
 {"time":"2026-05-17T19:31:46Z","event":"closed","task_id":"task-04h","actor":"pi-agent"}
+{"time":"2026-05-17T19:31:57Z","event":"created","task_id":"task-gdd","actor":"pi-agent"}
+{"time":"2026-05-17T19:32:18Z","event":"closed","task_id":"task-gdd","actor":"pi-agent"}
