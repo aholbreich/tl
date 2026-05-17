@@ -5,8 +5,9 @@ agents.
 
 This document captures design intent — the parts of the spec that are not
 derivable from code, features, or the README. For per-command behavior read
-the [`features/`](../features) directory; for flags, storage layout, and exit
-codes read the [README](../README.md); for the on-disk task schema read
+the [`features/`](../features) directory; for flags read
+[`COMMANDS.md`](COMMANDS.md); for storage layout and exit codes read the
+[README](../README.md); for the on-disk task schema read
 [`internal/task/task.go`](../internal/task/task.go).
 
 ---

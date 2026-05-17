@@ -1,8 +1,6 @@
 # Command reference
 
-User-visible flags for each implemented `tl` command. For canonical
-per-command behavior, read the matching file in [`../features/`](../features);
-the feature file wins if this page drifts. Every command also accepts
+User-visible flags for each implemented `tl` command. For canonical per-command behavior, read the matching file in [`../features/`](../features); the feature file wins if this page drifts. Every command also accepts
 `--help` at the terminal.
 
 ---
@@ -84,6 +82,15 @@ Idempotent — adding the same dependency twice is a no-op.
     --on                 Target task to depend on (required)
 ```
 
+## `tl dep remove TASK_ID --on TASK_ID`
+
+Remove a dependency link. Both tasks must exist (exit 3 if not).
+Idempotent — removing a non-existent dependency is a no-op.
+
+```
+    --on                 Target task to drop as a dependency (required)
+```
+
 ## `tl note TASK_ID`
 
 Append a timestamped note to a task's body under a `## Notes` section. Notes
@@ -107,6 +114,17 @@ Claimed tasks may be closed by the claiming actor, or by another actor with
     --json               Emit JSON output
 ```
 
+## `tl release TASK_ID`
+
+Voluntarily release a claim on a task, returning it to `open`. Only the
+claiming actor may release unless `--force` is used.
+
+```
+    --actor              Actor releasing the claim (optional; auto-resolved)
+    --force              Release even when another actor holds the claim
+    --json               Emit JSON output
+```
+
 ## `tl agents`
 
 Print a recommended `AGENTS.md` snippet for TaskLedger-aware agents. Writes
@@ -116,7 +134,6 @@ are formatted as Markdown code spans, for example `tl ready --json`.
 ```
 (no flags)
 ```
-
 ---
 
 ## Setup errors
