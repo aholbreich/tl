@@ -97,3 +97,4 @@
 {"time":"2026-05-17T20:16:30Z","event":"claimed","task_id":"task-hdj","actor":"pi-agent"}
 {"time":"2026-05-17T20:17:06Z","event":"note_added","task_id":"task-nge","actor":"pi:codex"}
 {"time":"2026-05-17T20:17:06Z","event":"closed","task_id":"task-nge","actor":"pi:codex"}
+{"time":"2026-05-17T20:25:01Z","event":"closed","task_id":"task-hdj","actor":"pi-agent"}
