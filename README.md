@@ -21,6 +21,29 @@ brew install --HEAD taskledger    # or: build from current main
 
 Prebuilt binaries are available for **macOS (Intel + Apple Silicon)** and **Linux (amd64 + arm64)**.
 
+### RPM (Fedora / Red Hat)
+
+Add the Holbreich RPM repository:
+
+```sh
+# Documentation: https://aholbreich.github.io/rpm-repo/#installation-fedora-centos-redhat
+echo '[Holbreich]
+name=Holbreich Repository
+baseurl=https://aholbreich.github.io/rpm-repo/
+enabled=1
+gpgcheck=0' | sudo tee /etc/yum.repos.d/holbreich.repo
+```
+
+Install TaskLedger:
+
+```sh
+sudo dnf install taskledger
+tl --version
+```
+
+If you run into issues with the RPM repository, see the
+[rpm-repo project](https://github.com/aholbreich/rpm-repo).
+
 ### From source
 
 ```sh

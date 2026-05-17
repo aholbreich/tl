@@ -5,10 +5,14 @@ VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null || echo dev)
 COMMIT_HASH := $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
 COUNT := $(shell git rev-list $(VERSION)..HEAD --count 2>/dev/null || echo 0)
 LDFLAGS := -X main.version=$(VERSION)-$(COUNT)-$(COMMIT_HASH)
+RPM_BUILD_DIR := build/rpm-root
+RPM_PACKAGE_DIR := build/rpm
+RPM_VERSION := $(patsubst v%,%,$(VERSION))
+RPM_RELEASE := $(COUNT).$(COMMIT_HASH)
 
 PLATFORMS = linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64
 
-.PHONY: build test bdd install get-version bump amend dists clean cleancache \
+.PHONY: build test bdd install rpm get-version bump amend dists clean cleancache \
 	binary_linux_amd64 binary_linux_arm64 binary_darwin_amd64 binary_darwin_arm64 \
 	binary_windows_amd64 binary_windows_arm64
 
@@ -31,6 +35,14 @@ install: test build
 	mkdir -p $(INSTALL_DIR)
 	install -m 0755 $(BINARY_NAME) $(INSTALL_DIR)/$(BINARY_NAME)
 	@echo "Installed $(BINARY_NAME) to $(INSTALL_DIR)/$(BINARY_NAME)"
+
+# Build an RPM package with fpm. Requires: gem install fpm
+rpm: build
+	rm -rf $(RPM_BUILD_DIR) $(RPM_PACKAGE_DIR)
+	mkdir -p $(RPM_BUILD_DIR) $(RPM_PACKAGE_DIR)
+	install -m 0755 $(BINARY_NAME) $(RPM_BUILD_DIR)/$(BINARY_NAME)
+	fpm --version $(RPM_VERSION) --iteration $(RPM_RELEASE) --package $(RPM_PACKAGE_DIR) -C $(RPM_BUILD_DIR) $(BINARY_NAME)
+	@echo "RPM package written to $(RPM_PACKAGE_DIR)/"
 
 get-version:
 	@echo $(VERSION)-$(COUNT)-$(COMMIT_HASH)
