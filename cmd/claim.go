@@ -11,21 +11,26 @@ import (
 	"github.com/aholbreich/taskledger/internal/events"
 	"github.com/aholbreich/taskledger/internal/repo"
 	"github.com/aholbreich/taskledger/internal/store"
+	"github.com/aholbreich/taskledger/internal/task"
 )
 
 func newClaimCmd() *cobra.Command {
 	var (
-		actor  string
-		ttl    string
-		asJSON bool
+		flagActor string
+		ttl       string
+		asJSON    bool
 	)
 	c := &cobra.Command{
 		Use:   "claim TASK_ID",
 		Short: "Claim a task with a time-limited lease",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			taskID := args[0]
-			actor = ResolveActor(actor)
+			taskID := store.NormalizeID(args[0])
+
+			resolved := ResolveActor(flagActor)
+			if resolved == "" || resolved == "unknown" {
+				return fmt.Errorf("actor identity is required: use --actor or set TL_ACTOR, ACTOR_NAME, or BEADS_ACTOR")
+			}
 
 			ledger, err := requireLedger()
 			if err != nil {
@@ -56,8 +61,15 @@ func newClaimCmd() *cobra.Command {
 				return err
 			}
 
+			// Same-actor renewal: extend the lease without requiring open status.
+			if t.Claim.Actor != nil && *t.Claim.Actor == resolved {
+				if t.Claim.ExpiresAt != nil && t.Claim.ExpiresAt.After(time.Now().UTC()) {
+					return renewClaim(ledger, t, ttlDuration, resolved, asJSON, cmd)
+				}
+			}
+
 			// Reject if another actor holds an active (non-expired) claim.
-			if t.Claim.Actor != nil && *t.Claim.Actor != actor {
+			if t.Claim.Actor != nil && *t.Claim.Actor != resolved {
 				if t.Claim.ExpiresAt != nil && t.Claim.ExpiresAt.After(time.Now().UTC()) {
 					return NewExitError(5, "task %s is already claimed by %s", taskID, *t.Claim.Actor)
 				}
@@ -69,50 +81,89 @@ func newClaimCmd() *cobra.Command {
 			}
 
 			// All dependencies must be done.
-			for _, depID := range t.DependsOn {
-				dep, err := store.Read(ledger, depID)
-				if errors.Is(err, store.ErrTaskNotFound) {
-					return fmt.Errorf("task %s depends on %s which does not exist", taskID, depID)
-				}
-				if err != nil {
-					return err
-				}
-				if dep.Status != "done" {
-					return NewExitError(4, "task %s is not ready: dependency %s is not done (status %s)", taskID, depID, dep.Status)
-				}
-			}
-
-			now := time.Now().UTC().Truncate(time.Second)
-			expires := now.Add(ttlDuration)
-			t.Claim.Actor = &actor
-			t.Claim.ClaimedAt = &now
-			t.Claim.ExpiresAt = &expires
-			t.Claim.HeartbeatAt = &now
-			t.Status = "in_progress"
-			t.UpdatedAt = now
-
-			if err := store.Write(ledger, t); err != nil {
-				return err
-			}
-			if err := events.Append(ledger, events.Event{
-				Event:  "claimed",
-				TaskID: t.ID,
-				Actor:  actor,
-			}); err != nil {
+			if err := checkDeps(ledger, t); err != nil {
 				return err
 			}
 
-			if asJSON {
-				enc := json.NewEncoder(cmd.OutOrStdout())
-				enc.SetIndent("", "  ")
-				return enc.Encode(t)
-			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Claimed task %s (%s, expires %s)\n", t.ID, actor, expires.Format(time.RFC3339))
-			return nil
+			return claimTask(ledger, t, ttlDuration, resolved, asJSON, cmd)
 		},
 	}
-	c.Flags().StringVar(&actor, "actor", "", "Claiming actor (resolved from env or auto-detected if unset)")
+	c.Flags().StringVar(&flagActor, "actor", "", "Claiming actor (overrides TL_ACTOR / ACTOR_NAME / BEADS_ACTOR)")
 	c.Flags().StringVar(&ttl, "ttl", "", "Lease duration, e.g. 60m or 2h (default from config)")
 	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output")
 	return c
+}
+
+// checkDeps verifies every dependency of t has status "done".
+func checkDeps(ledger string, t *task.Task) error {
+	for _, depID := range t.DependsOn {
+		dep, err := store.Read(ledger, depID)
+		if errors.Is(err, store.ErrTaskNotFound) {
+			return fmt.Errorf("task %s depends on %s which does not exist", t.ID, depID)
+		}
+		if err != nil {
+			return err
+		}
+		if dep.Status != "done" {
+			return NewExitError(4, "task %s is not ready: dependency %s is not done (status %s)", t.ID, depID, dep.Status)
+		}
+	}
+	return nil
+}
+
+// claimTask sets the claim on t and writes it.
+func claimTask(ledger string, t *task.Task, ttlDuration time.Duration, resolved string, asJSON bool, cmd *cobra.Command) error {
+	now := time.Now().UTC().Truncate(time.Second)
+	expires := now.Add(ttlDuration)
+	t.Claim.Actor = &resolved
+	t.Claim.ClaimedAt = &now
+	t.Claim.ExpiresAt = &expires
+	t.Claim.HeartbeatAt = &now
+	t.Status = "in_progress"
+	t.UpdatedAt = now
+
+	if err := store.Write(ledger, t); err != nil {
+		return err
+	}
+	if err := events.Append(ledger, events.Event{
+		Event:  "claimed",
+		TaskID: t.ID,
+		Actor:  resolved,
+	}); err != nil {
+		return err
+	}
+
+	return emitClaimResult(t, resolved, expires, asJSON, cmd)
+}
+
+// renewClaim extends the existing claim expiry without changing status.
+func renewClaim(ledger string, t *task.Task, ttlDuration time.Duration, resolved string, asJSON bool, cmd *cobra.Command) error {
+	now := time.Now().UTC().Truncate(time.Second)
+	expires := now.Add(ttlDuration)
+	t.Claim.ExpiresAt = &expires
+	t.Claim.HeartbeatAt = &now
+	t.UpdatedAt = now
+
+	if err := store.Write(ledger, t); err != nil {
+		return err
+	}
+	if err := events.Append(ledger, events.Event{
+		Event:  "claim_renewed",
+		TaskID: t.ID,
+		Actor:  resolved,
+	}); err != nil {
+		return err
+	}
+
+	return emitClaimResult(t, resolved, expires, asJSON, cmd)
+}
+
+func emitClaimResult(t *task.Task, actor string, expires time.Time, asJSON bool, cmd *cobra.Command) error {
+	if asJSON {
+		enc := json.NewEncoder(cmd.OutOrStdout())
+		enc.SetIndent("", "  ")
+		return enc.Encode(t)
+	}
+	fmt.Fprintf(cmd.OutOrStdout(), "Claimed task %s (%s, expires %s)\n", t.ID, actor, expires.Format(time.RFC3339))
+	return nil
 }

@@ -852,8 +852,13 @@ func (w *world) claimExpiryIsExtended(id string) error {
 	if t.Claim.ExpiresAt == nil {
 		return fmt.Errorf("task %s has no claim expiry", id)
 	}
+	// Fixture tasks set UpdatedAt to fixtureTime (2026-05-16T12:00Z).
+	// A successful renewal bumps UpdatedAt to time.Now().
+	if t.UpdatedAt.Equal(fixtureTime) {
+		return fmt.Errorf("task %s was not renewed (updated_at still at fixture time)", id)
+	}
 	if !t.Claim.ExpiresAt.After(time.Now().UTC()) {
-		return fmt.Errorf("task %s claim expiry %v is not in the future (not extended)", id, t.Claim.ExpiresAt)
+		return fmt.Errorf("task %s claim expiry %v is not in the future", id, t.Claim.ExpiresAt)
 	}
 	return nil
 }

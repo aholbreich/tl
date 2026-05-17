@@ -20,7 +20,7 @@ Feature: Close a completed task
     Then "task-abc123" has status "done"
     And an event "closed" is recorded for "task-abc123"
 
-  Scenario: An unclaimed task can be closed by any actor
+  Scenario: An unclaimed task can be closed by any actor 
     Given a task "task-abc123" with status "open"
     When the developer runs `tl close task-abc123 --actor human`
     Then "task-abc123" has status "done"

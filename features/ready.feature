@@ -1,3 +1,4 @@
+@implemented
 Feature: List ready tasks
   As an agent picking up work
   I want to see which open tasks are unblocked and unclaimed
@@ -37,6 +38,21 @@ Feature: List ready tasks
 
   Scenario: A claimed in-progress task is not ready
     Given a task "task-abc123" claimed by "claude-code:main" with an active lease
+    When the agent runs `tl ready`
+    Then the ready output does not contain "task-abc123"
+
+  Scenario: A task with a stale expired claim is ready
+    Given a task "task-abc123" with an expired claim by "claude-code:main"
+    When the agent runs `tl ready`
+    Then the ready output contains "task-abc123"
+
+  Scenario: A done task is not ready
+    Given a task "task-abc123" with status "done"
+    When the agent runs `tl ready`
+    Then the ready output does not contain "task-abc123"
+
+  Scenario: A cancelled task is not ready
+    Given a task "task-abc123" with status "cancelled"
     When the agent runs `tl ready`
     Then the ready output does not contain "task-abc123"
 
