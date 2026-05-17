@@ -3,3 +3,5 @@
 {"time":"2026-05-17T20:58:34Z","event":"created","task_id":"task-mj2","actor":"pi-agent"}
 {"time":"2026-05-17T20:58:39Z","event":"claimed","task_id":"task-mj2","actor":"pi-agent"}
 {"time":"2026-05-17T21:00:06Z","event":"closed","task_id":"task-mj2","actor":"pi-agent"}
+{"time":"2026-05-17T21:06:08Z","event":"created","task_id":"task-55l","actor":"human"}
+{"time":"2026-05-17T21:06:24Z","event":"closed","task_id":"task-55l","actor":"pi-agent"}
