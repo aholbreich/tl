@@ -96,8 +96,18 @@ A task is **ready** (eligible for `tl ready` / `tl claim`) when:
 - all dependencies are `done`, **and**
 - it has no active claim.
 
+All six statuses are reachable through dedicated commands — see
+[`COMMANDS.md`](COMMANDS.md) for the per-command transitions. `tl pending`
+and `tl block` release the active claim when they flip status; the
+collaborating actor re-claims after `tl resolve` or `tl unblock` if they
+want to resume.
+
 The task file is the current state; `.taskledger/events.jsonl` is the
-append-only audit trail. Every mutating command appends one JSON line.
+append-only audit trail. Every mutating command appends one JSON line;
+`tl history` reads them back.
+
+Long-running work renews its lease by re-running `tl claim` as the same
+actor — there is no separate heartbeat command.
 
 ---
 

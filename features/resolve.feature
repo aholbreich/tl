@@ -13,3 +13,9 @@ Feature: Resolve a pending task with an answer
     Then "task-abc123" has status "open"
     And "task-abc123" has a note containing "Use GitHub OAuth first."
     And an event "pending_resolved" is recorded for "task-abc123"
+
+  Scenario: Resolving a task that is not pending_human is rejected
+    Given a task "task-abc123" with status "open"
+    When the developer runs `tl resolve task-abc123 --answer "moot"`
+    Then the command reports the task is not pending_human
+    And "task-abc123" still has status "open"

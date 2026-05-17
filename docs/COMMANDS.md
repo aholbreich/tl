@@ -31,12 +31,15 @@ Create a new task. The title is a required positional argument or passed via
 ## `tl list`
 
 List active tasks in the ledger, sorted by priority then identifier. Closed
-statuses (`done`, `cancelled`) are hidden by default. Human output includes
-`ID`, `Status`, `Priority`, `Claimed By`, and `Title`.
+statuses (`done`, `cancelled`) are hidden by default. Passing `--status`
+with a closed status reveals matching tasks without needing `--all`. Human
+output includes `ID`, `Status`, `Priority`, `Claimed By`, and `Title`.
 
 ```
 -a, --all                Include closed tasks (done and cancelled)
+    --status             Only show tasks with this status (e.g. pending_human, blocked)
     --claimed-by         Only show tasks claimed by this actor
+    --mine               Shortcut for --claimed-by <resolved actor>
     --json               Emit JSON output
 ```
 
@@ -67,9 +70,14 @@ records claim expiry. Rejects if another actor holds an active claim (exit
 5) or dependencies are unmet (exit 4). Uses the same actor resolution chain
 as `note`.
 
+Re-running `tl claim` as the same actor extends the lease — this is the
+heartbeat pattern for long-running work. Use `--force` to take over an
+active claim held by a different actor.
+
 ```
     --actor              Claiming actor (optional; auto-resolved if unset)
     --ttl                Lease duration, e.g. 60m or 2h (default from config)
+    --force              Take over an active claim held by a different actor
     --json               Emit JSON output
 ```
 
@@ -114,6 +122,22 @@ Claimed tasks may be closed by the claiming actor, or by another actor with
     --json               Emit JSON output
 ```
 
+## `tl cancel TASK_ID -m "<reason>"`
+
+Mark a task as `cancelled`. Use when work will not be completed —
+superseded, duplicated, no-longer-needed — so the audit trail records
+intentional abandonment rather than falsely claiming completion. A reason
+is required and stored as a note. Cancelling a claimed task releases the
+claim; another actor's active claim requires `--force`. Rejects already
+`done` and already `cancelled` tasks.
+
+```
+-m, --message            Cancellation reason (required, stored as a note)
+    --actor              Actor cancelling the task (optional; auto-resolved)
+    --force              Cancel even when another actor holds an active claim
+    --json               Emit JSON output
+```
+
 ## `tl release TASK_ID`
 
 Voluntarily release a claim on a task, returning it to `open`. Only the
@@ -123,6 +147,40 @@ claiming actor may release unless `--force` is used.
     --actor              Actor releasing the claim (optional; auto-resolved)
     --force              Release even when another actor holds the claim
     --json               Emit JSON output
+```
+
+## `tl block TASK_ID -m "<blocker>"`
+
+Mark a task `blocked` and record the blocking condition as a note. Use for
+external blockers (waiting on upstream, infra down, third-party fix) —
+distinct from `pending_human`, which is "I need an answer". Blocking a
+claimed task releases the claim so others can see it is not actively being
+worked.
+
+```
+-m, --message            Blocker description (required, stored as a note)
+    --actor              Actor reporting the blocker (optional; auto-resolved)
+    --json               Emit JSON output
+```
+
+## `tl unblock TASK_ID`
+
+Clear the `blocked` status and return the task to `open` so it becomes
+eligible for the ready queue again. Rejects tasks that are not blocked.
+
+```
+    --actor              Actor clearing the blocker (optional; auto-resolved)
+    --json               Emit JSON output
+```
+
+## `tl history TASK_ID`
+
+Print every event recorded for a task in chronological order. Reads from
+`.taskledger/events.jsonl` and filters to one task. Use to reconstruct who
+did what and when without opening the raw journal.
+
+```
+    --json               Emit JSON output (array of raw event objects)
 ```
 
 ## `tl agents`

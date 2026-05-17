@@ -30,3 +30,8 @@
 {"time":"2026-05-17T16:35:31Z","event":"closed","task_id":"task-4h9","actor":"pi-agent"}
 {"time":"2026-05-17T16:39:23Z","event":"claimed","task_id":"task-748","actor":"pi-agent"}
 {"time":"2026-05-17T16:42:31Z","event":"closed","task_id":"task-748","actor":"pi-agent"}
+{"time":"2026-05-17T17:19:41Z","event":"created","task_id":"task-dog","actor":"claude"}
+{"time":"2026-05-17T17:19:44Z","event":"created","task_id":"task-5me","actor":"claude"}
+{"time":"2026-05-17T17:19:46Z","event":"created","task_id":"task-nge","actor":"claude"}
+{"time":"2026-05-17T17:19:49Z","event":"created","task_id":"task-fm4","actor":"claude"}
+{"time":"2026-05-17T17:19:51Z","event":"created","task_id":"task-un0","actor":"claude"}

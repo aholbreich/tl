@@ -79,3 +79,39 @@ Feature: List tasks in the ledger
     And the output does not list "task-aaa111"
     And the output does not list "task-ccc333"
     And the output does not list "task-eee555"
+
+  Scenario: Listing tasks can be filtered by status
+    Given the following tasks exist:
+      | id          | status        | title         |
+      | task-aaa111 | open          | First         |
+      | task-bbb222 | pending_human | Second        |
+      | task-ccc333 | blocked       | Third         |
+      | task-ddd444 | in_progress   | Fourth        |
+    When the developer runs `tl list --status pending_human`
+    Then the output lists "task-bbb222"
+    And the output does not list "task-aaa111"
+    And the output does not list "task-ccc333"
+    And the output does not list "task-ddd444"
+
+  Scenario: Filtering by a closed status reveals closed tasks without --all
+    Given the following tasks exist:
+      | id          | status    | title              |
+      | task-aaa111 | open      | Active             |
+      | task-bbb222 | cancelled | Abandoned          |
+      | task-ccc333 | done      | Finished           |
+    When the developer runs `tl list --status cancelled`
+    Then the output lists "task-bbb222"
+    And the output does not list "task-aaa111"
+    And the output does not list "task-ccc333"
+
+  Scenario: --mine filters tasks claimed by the resolved actor
+    Given environment variable "TL_ACTOR" is "codex"
+    And the following tasks exist:
+      | id          | status      | claimed by | title    |
+      | task-aaa111 | in_progress | codex      | Mine A   |
+      | task-bbb222 | in_progress | pi:1       | Theirs   |
+      | task-ccc333 | in_progress | codex      | Mine B   |
+    When the developer runs `tl list --mine`
+    Then the output lists "task-aaa111"
+    And the output lists "task-ccc333"
+    And the output does not list "task-bbb222"

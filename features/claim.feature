@@ -34,3 +34,10 @@ Feature: Claim a task with a lease
     When the agent runs `tl claim task-abc123 --actor claude-code:main --ttl 120m --json`
     Then the JSON output contains actor "claude-code:main"
     And the JSON output contains a claim expiry 120 minutes after the claim time
+
+  Scenario: Forcing claim over another actor's active claim succeeds
+    Given a task "task-abc123" claimed by "claude-code:frontend" with an active lease
+    When the developer runs `tl claim task-abc123 --actor human --force`
+    Then "task-abc123" is claimed by "human"
+    And "task-abc123" is no longer claimed by "claude-code:frontend"
+    And an event "claimed" is recorded for "task-abc123"

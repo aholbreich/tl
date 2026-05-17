@@ -47,6 +47,25 @@ tl note <id> -m "Initial implementation done."                   # record a hand
 tl close <id>                                                    # mark as done
 ```
 
+A full collaboration loop — including a handoff back to the human when the
+agent needs a decision — looks like this:
+
+```mermaid
+sequenceDiagram
+    actor H as Human
+    actor A as Agent
+    participant L as Ledger
+    H->>L: tl create "Add login validation"
+    A->>L: tl ready --json
+    L-->>A: [task-abc]
+    A->>L: tl claim task-abc
+    A->>L: tl note task-abc -m "..."
+    A->>L: tl pending task-abc --question "Which provider?"
+    H->>L: tl resolve task-abc --answer "GitHub OAuth"
+    A->>L: tl claim task-abc
+    A->>L: tl close task-abc
+```
+
 Actor identity resolves in order: `--actor` flag > `TL_ACTOR` env >
 `ACTOR_NAME` env > `BEADS_ACTOR` env > agent auto-detection.
 
@@ -103,6 +122,39 @@ tags: []
 ## Description
 
 Validate email format and require a password.
+```
+
+As a task moves through its lifecycle, frontmatter and body gain fields.
+
+A `pending_human` task records the question structurally so `tl resolve`
+can consume it; the claim is released while waiting:
+
+```yaml
+status: pending_human
+claim:
+  actor: null
+  claimed_at: null
+  expires_at: null
+  heartbeat_at: null
+pending:
+  question: Which OAuth provider should we ship first?
+  requester: claude-code:frontend
+  requested_at: 2026-05-17T01:15:22Z
+```
+
+A `blocked` task carries no extra frontmatter — the status is the signal,
+and the blocker reason lives in the body as a normal note appended by
+`tl block`:
+
+```markdown
+status: blocked
+```
+
+```markdown
+## Notes
+
+- 2026-05-17T02:11:08Z claude-code:main: Blocked — waiting on upstream
+  library release (tracking GH issue 412).
 ```
 
 ---

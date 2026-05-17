@@ -18,3 +18,10 @@ Feature: Mark a task as pending human input
     Given a task "task-abc123" with status "pending_human"
     When the agent runs `tl ready`
     Then the ready output does not contain "task-abc123"
+
+  Scenario: Marking a task pending_human releases the active claim
+    Given a task "task-abc123" claimed by "claude-code:frontend" with an active lease
+    When the agent runs `tl pending task-abc123 --actor claude-code:frontend --question "Which auth provider first?"`
+    Then "task-abc123" has status "pending_human"
+    And "task-abc123" is not claimed
+    And "task-abc123" records the requester "claude-code:frontend"
