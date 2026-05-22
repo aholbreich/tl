@@ -1,4 +1,4 @@
-# TaskLedger
+# tl tool - Taks ledger for your repository
 
 > A Git-native task ledger for humans and AI coding agents.
 
