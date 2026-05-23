@@ -11,3 +11,13 @@
 {"time":"2026-05-23T20:35:56Z","event":"claimed","task_id":"task-0qw","actor":"pi:rpm-publish"}
 {"time":"2026-05-23T20:39:40Z","event":"note_added","task_id":"task-0qw","actor":"pi:rpm-publish"}
 {"time":"2026-05-23T20:39:40Z","event":"released","task_id":"task-0qw","actor":"pi:rpm-publish"}
+{"time":"2026-05-23T20:46:46Z","event":"claimed","task_id":"task-0qw","actor":"pi:rpm-publish"}
+{"time":"2026-05-23T20:46:46Z","event":"closed","task_id":"task-0qw","actor":"pi:rpm-publish"}
+{"time":"2026-05-23T20:58:30Z","event":"created","task_id":"task-qf4","actor":"human"}
+{"time":"2026-05-23T20:58:34Z","event":"claimed","task_id":"task-qf4","actor":"pi:install-script"}
+{"time":"2026-05-23T20:59:41Z","event":"note_added","task_id":"task-qf4","actor":"pi:install-script"}
+{"time":"2026-05-23T20:59:41Z","event":"closed","task_id":"task-qf4","actor":"pi:install-script"}
+{"time":"2026-05-23T21:03:14Z","event":"created","task_id":"task-029","actor":"human"}
+{"time":"2026-05-23T21:03:20Z","event":"claimed","task_id":"task-029","actor":"pi:readme-toc"}
+{"time":"2026-05-23T21:03:40Z","event":"note_added","task_id":"task-029","actor":"pi:readme-toc"}
+{"time":"2026-05-23T21:03:40Z","event":"closed","task_id":"task-029","actor":"pi:readme-toc"}

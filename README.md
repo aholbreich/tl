@@ -1,4 +1,4 @@
-# tl tool - Taks ledger for your repository
+# tl tool - Task ledger for your repository
 
 > A Git-native task ledger for humans and AI coding agents.
 
@@ -6,9 +6,12 @@ Task ledger (`tl`) stores tasks as Markdown files with YAML frontmatter inside y
 
 No daemon. No hidden database. No automatic push. No AGENTS.md magic.
 
+**Contents:** [Installation Options](#installation-options) · [Quickstart](#quickstart) · [Commands](#commands) · [Implementation status](#implementation-status) · [Development](#development) · [Further reading](#further-reading)
+
 ---
 
-## Install
+## Installation Options
+
 
 ### Homebrew (macOS / Linux)
 
@@ -49,6 +52,20 @@ tl --version
 If you run into issues with the RPM repository, see the
 [rpm-repo project](https://github.com/aholbreich/rpm-repo).
 
+### Install script (macOS / Linux)
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/aholbreich/tl/main/install.sh | sh
+```
+
+Install a specific version or target directory:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/aholbreich/tl/main/install.sh | sh -s -- --version 0.4.4
+curl -fsSL https://raw.githubusercontent.com/aholbreich/tl/main/install.sh | sh -s -- --bin-dir "$HOME/.local/bin"
+```
+
+
 ### From source
 
 ```sh
@@ -85,27 +102,6 @@ tl note <id> -m "Initial implementation done."                   # record a hand
 tl close <id>                                                    # mark as done
 ```
 
-## Workflow reasoning
-
-An example full collaboration loop - including a handoff back to the human when the
-agent needs a decision could looks like this:
-
-```mermaid
-sequenceDiagram
-    actor H as Human
-    actor A as Agent
-    participant L as Ledger
-    H->>L: tl create "Add login validation"
-    A->>L: tl ready --json
-    L-->>A: [task-abc]
-    A->>L: tl claim task-abc
-    A->>L: tl note task-abc -m "Implementing BE ..."
-    A->>L: tl pending task-abc --question "Which provider?"
-    H->>L: tl resolve task-abc --answer "GitHub OAuth"
-    A->>L: tl claim task-abc
-    A->>L: tl close task-abc
-```
-
 Actor identity resolves in order: `--actor` flag > `TL_ACTOR` env >
 `ACTOR_NAME` env > `BEADS_ACTOR` env > agent auto-detection.
 
@@ -124,78 +120,6 @@ Actor identity resolves in order: `--actor` flag > `TL_ACTOR` env >
 Implemented commands carry the `@implemented` tag in their feature file.
 `make bdd` runs only the implemented suite; untagged features are the
 binding contract for unimplemented commands.
-
----
-
-## Storage
-
-```
-.taskledger/
-  config.yaml      # defaults
-  tasks/
-    task-<3>.md    # one file per task (Markdown + YAML frontmatter)
-  events.jsonl     # append-only audit trail
-```
-
-A created task looks like:
-
-```markdown
----
-id: task-x3n
-title: Add login validation
-status: open
-priority: medium
-type: ""
-created_at: 2026-05-17T00:45:40Z
-updated_at: 2026-05-17T00:45:40Z
-created_by: human
-assignee: null
-depends_on: []
-claim:
-  actor: null
-  claimed_at: null
-  expires_at: null
-  heartbeat_at: null
-tags: []
----
-
-## Description
-
-Validate email format and require a password.
-```
-
-As a task moves through its lifecycle, frontmatter and body gain fields.
-
-A `pending_human` task records the question structurally so `tl resolve`
-can consume it; the claim is released while waiting:
-
-```yaml
-status: pending_human
-claim:
-  actor: null
-  claimed_at: null
-  expires_at: null
-  heartbeat_at: null
-pending:
-  question: Which OAuth provider should we ship first?
-  requester: claude-code:frontend
-  requested_at: 2026-05-17T01:15:22Z
-```
-
-A `blocked` task carries no extra frontmatter — the status is the signal,
-and the blocker reason lives in the body as a normal note appended by
-`tl block`:
-
-```markdown
-status: blocked
-```
-
-```markdown
-## Notes
-
-- 2026-05-17T02:11:08Z claude-code:main: Blocked — waiting on upstream
-  library release (tracking GH issue 412).
-```
 
 ---
 
@@ -224,8 +148,8 @@ Tag-triggered releases build all platforms and publish a GitHub Release.
 
 ## Further reading
 
-- [`docs/COMMANDS.md`](docs/COMMANDS.md) — per-command flag reference
+- [`docs/COMMANDS.md`](docs/COMMANDS.md) - per-command flag reference
+- [`docs/tech-docs.md`](docs/tech-docs.md) - some implementation detail
 - [`docs/PRD.md`](docs/PRD.md) — design intent, non-goals, status enum
-- [`features/`](features/) — Gherkin behavioral spec, one file per command
-- [`AGENTS.md`](AGENTS.md) — leading doc for any agent working in this repo
-- [`docs/gherkin-guidelines.md`](docs/gherkin-guidelines.md) — Gherkin style rules
+
+

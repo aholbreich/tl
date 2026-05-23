@@ -1,10 +1,10 @@
 ---
 id: task-0qw
 title: make repository push work like it works with adr-tool
-status: open
+status: done
 priority: medium
 created_at: 2026-05-17T20:49:54Z
-updated_at: 2026-05-23T20:39:40Z
+updated_at: 2026-05-23T20:46:46Z
 created_by: human
 assignee: null
 depends_on: []
