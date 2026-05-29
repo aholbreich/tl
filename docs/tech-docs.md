@@ -21,7 +21,7 @@ A task is **ready** (eligible for `tl ready` / `tl claim`) when:
 - it has no active claim.
 
 All six statuses are reachable through dedicated commands — see
-[`COMMANDS.md`](COMMANDS.md) for the per-command transitions. `tl pending`
+[`usage.md`](usage.md) for the commands that drive each transition. `tl pending`
 and `tl block` release the active claim when they flip status; the
 collaborating actor re-claims after `tl resolve` or `tl unblock` if they
 want to resume.
