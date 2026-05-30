@@ -129,3 +129,13 @@
 {"time":"2026-05-29T18:59:44Z","event":"claim_renewed","task_id":"task-ppj","actor":"pi:promotion"}
 {"time":"2026-05-29T18:59:44Z","event":"closed","task_id":"task-ppj","actor":"pi:promotion"}
 {"time":"2026-05-29T19:07:15Z","event":"claimed","task_id":"task-oqf","actor":"pi:promotion"}
+{"time":"2026-05-29T19:09:52Z","event":"claim_renewed","task_id":"task-oqf","actor":"pi:promotion"}
+{"time":"2026-05-29T19:09:52Z","event":"note_added","task_id":"task-oqf","actor":"pi:promotion"}
+{"time":"2026-05-29T19:09:52Z","event":"closed","task_id":"task-oqf","actor":"pi:promotion"}
+{"time":"2026-05-30T17:00:38Z","event":"claimed","task_id":"task-uda","actor":"pi:promotion"}
+{"time":"2026-05-30T17:00:47Z","event":"note_added","task_id":"task-uda","actor":"main-pc"}
+{"time":"2026-05-30T17:00:49Z","event":"closed","task_id":"task-uda","actor":"pi:promotion"}
+{"time":"2026-05-30T17:04:04Z","event":"cancelled","task_id":"task-b3i","actor":"pi:oss-hygiene"}
+{"time":"2026-05-30T17:04:06Z","event":"claimed","task_id":"task-3r2","actor":"pi:oss-hygiene"}
+{"time":"2026-05-30T17:04:31Z","event":"note_added","task_id":"task-3r2","actor":"pi:oss-hygiene"}
+{"time":"2026-05-30T17:04:31Z","event":"closed","task_id":"task-3r2","actor":"pi:oss-hygiene"}
