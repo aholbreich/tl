@@ -40,11 +40,26 @@ get-version:
 	@echo $(VERSION)-$(COUNT)-$(COMMIT_HASH)
 
 # Generate release notes from commits since the previous tag.
+# Set CURRENT_TAG=x.y.z in tag-triggered release jobs to compare the previous tag to that tag.
 changelog:
-	@if prev=$$(git describe --tags --abbrev=0 2>/dev/null); then \
-		range="$$prev..HEAD"; \
+	@set -e; \
+	current_tag="$(CURRENT_TAG)"; \
+	if [ -n "$$current_tag" ]; then \
+		if ! git rev-parse -q --verify "refs/tags/$$current_tag^{commit}" >/dev/null; then \
+			echo "CURRENT_TAG '$$current_tag' does not exist" >&2; \
+			exit 2; \
+		fi; \
+		if prev=$$(git describe --tags --abbrev=0 "$$current_tag^" 2>/dev/null); then \
+			range="$$prev..$$current_tag"; \
+		else \
+			range="$$current_tag"; \
+		fi; \
 	else \
-		range="HEAD"; \
+		if prev=$$(git describe --tags --abbrev=0 2>/dev/null); then \
+			range="$$prev..HEAD"; \
+		else \
+			range="HEAD"; \
+		fi; \
 	fi; \
 	git log --oneline "$$range" | awk ' \
 		BEGIN { print "## What'"'"'s Changed"; print "" } \

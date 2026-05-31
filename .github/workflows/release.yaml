@@ -50,11 +50,19 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
       - name: Download binaries
         uses: actions/download-artifact@v4
         with:
           path: dist
           merge-multiple: true
+
+      - name: Generate release notes
+        run: make changelog CURRENT_TAG="${{ github.ref_name }}" > release_notes.md
 
       - name: Check for existing release
         id: existing-release
@@ -73,7 +81,8 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: tl ${{ github.ref_name }}
-          generate_release_notes: true
+          body_path: release_notes.md
+          generate_release_notes: false
           files: |
             dist/**/*
 

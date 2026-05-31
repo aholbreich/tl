@@ -233,3 +233,9 @@
 {"time":"2026-05-31T20:25:43Z","event":"note_added","task_id":"task-obe","actor":"pi:agents-compact"}
 {"time":"2026-05-31T20:25:43Z","event":"closed","task_id":"task-obe","actor":"pi:agents-compact"}
 {"time":"2026-05-31T20:27:35Z","event":"note_added","task_id":"task-obe","actor":"pi:agents-compact"}
+{"time":"2026-05-31T20:37:50Z","event":"created","task_id":"task-ejg","actor":"pi:release-notes"}
+{"time":"2026-05-31T20:37:50Z","event":"reference_added","task_id":"task-ejg","actor":"pi:release-notes","value":"Makefile"}
+{"time":"2026-05-31T20:37:50Z","event":"reference_added","task_id":"task-ejg","actor":"pi:release-notes","value":".github/workflows/release.yaml"}
+{"time":"2026-05-31T20:37:52Z","event":"claimed","task_id":"task-ejg","actor":"pi:release-notes"}
+{"time":"2026-05-31T20:38:35Z","event":"note_added","task_id":"task-ejg","actor":"pi:release-notes"}
+{"time":"2026-05-31T20:38:35Z","event":"closed","task_id":"task-ejg","actor":"pi:release-notes"}
