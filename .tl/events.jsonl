@@ -226,3 +226,10 @@
 {"time":"2026-05-31T19:09:42Z","event":"removed","task_id":"task-b3i","actor":"main-pc","value":"outdated"}
 {"time":"2026-05-31T19:10:38Z","event":"removed","task_id":"task-pnr","actor":"main-pc","value":"outdated"}
 {"time":"2026-05-31T19:10:46Z","event":"removed","task_id":"task-0fo","actor":"main-pc","value":"outdated"}
+{"time":"2026-05-31T20:22:29Z","event":"claimed","task_id":"task-obe","actor":"pi:agents-compact"}
+{"time":"2026-05-31T20:25:05Z","event":"claimed","task_id":"task-2q0","actor":"pi:agents-compact"}
+{"time":"2026-05-31T20:25:05Z","event":"note_added","task_id":"task-2q0","actor":"pi:agents-compact"}
+{"time":"2026-05-31T20:25:05Z","event":"closed","task_id":"task-2q0","actor":"pi:agents-compact"}
+{"time":"2026-05-31T20:25:43Z","event":"note_added","task_id":"task-obe","actor":"pi:agents-compact"}
+{"time":"2026-05-31T20:25:43Z","event":"closed","task_id":"task-obe","actor":"pi:agents-compact"}
+{"time":"2026-05-31T20:27:35Z","event":"note_added","task_id":"task-obe","actor":"pi:agents-compact"}

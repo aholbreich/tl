@@ -297,15 +297,18 @@ $ tl doctor --fix --force              # include destructive repairs
 output into `AGENTS.md` or an agent's context so it knows the claim/note/close
 discipline without being told each time. The generated snippet uses explicit
 `--actor agent-name` examples, highlights handoff reads (`show` + `history`),
-and reminds agents to inspect task references before editing. Use
+and reminds agents to inspect task references before editing.
+
+Use `tl agents --compact` for a shorter context-friendly guide. Use
 `tl agents --write-files --dry-run` to preview which instruction files would be
-updated or skipped without modifying them.
+updated or skipped without modifying them, and repeat `--file <path>` to target
+specific files instead of the default known instruction files.
 
 ```sh
-$ tl agents | head -3
-## tl workflow
-
-This repository uses `tl` for local task coordination between humans and agents.
+$ tl agents --compact | head -3
+tl workflow compact
+Use tl agents and tl <cmd> --help to learn the workflow and available commands.
+tl ready [--tag x] --json — find unclaimed ready work.
 ```
 
 ---

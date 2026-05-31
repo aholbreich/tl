@@ -12,6 +12,9 @@ import (
 //go:embed agents_snippet.md
 var agentsSnippet string
 
+//go:embed agents_snippet_compact.md
+var agentsSnippetCompact string
+
 const (
 	agentsBeginMarker       = "<!-- BEGIN TL WORKFLOW -->"
 	agentsEndMarker         = "<!-- END TL WORKFLOW -->"
@@ -19,11 +22,20 @@ const (
 	legacyAgentsEndMarker   = "<!-- END " + "TASK" + "LEDGER WORKFLOW -->"
 )
 
-var agentInstructionFiles = []string{"AGENTS.md", "CLAUDE.md", "GEMINI.md"}
+var agentInstructionFiles = []string{
+	"AGENTS.md",
+	"CLAUDE.md",
+	"GEMINI_RULES.md",
+	".cursorrules",
+	".aider-rules.md",
+	".github/copilot-instructions.md",
+}
 
 func newAgentsCmd() *cobra.Command {
 	var writeFiles bool
 	var dryRun bool
+	var compact bool
+	var files []string
 	c := &cobra.Command{
 		Use:   "agents",
 		Short: "Print recommended AGENTS.md instructions",
@@ -32,15 +44,17 @@ func newAgentsCmd() *cobra.Command {
 				return NewExitError(2, "--dry-run requires --write-files")
 			}
 			if writeFiles {
-				return updateAgentInstructionFiles(cmd, dryRun)
+				return updateAgentInstructionFiles(cmd, dryRun, compact, files)
 			}
-			_, err := fmt.Fprint(cmd.OutOrStdout(), agentsSnippet)
+			_, err := fmt.Fprint(cmd.OutOrStdout(), selectedAgentsSnippet(compact))
 			return err
 		},
 	}
 	c.Flags().BoolVar(&writeFiles, "write-files", false, "Write or refresh the tl workflow block in existing agent instruction files")
 	c.Flags().BoolVar(&writeFiles, "update", false, "(deprecated: use --write-files)")
 	c.Flags().BoolVar(&dryRun, "dry-run", false, "Report which agent instruction files would be updated without modifying them")
+	c.Flags().BoolVar(&compact, "compact", false, "Print or write a compact tl workflow guide for constrained context windows")
+	c.Flags().StringArrayVar(&files, "file", nil, "Only consider this agent instruction file (repeatable; defaults to known files)")
 	_ = c.Flags().MarkHidden("update")
 	return c
 }
@@ -53,8 +67,9 @@ type agentInstructionFilePlan struct {
 	Content         []byte
 }
 
-func updateAgentInstructionFiles(cmd *cobra.Command, dryRun bool) error {
-	plans, err := scanAgentInstructionFiles(agentInstructionFiles)
+func updateAgentInstructionFiles(cmd *cobra.Command, dryRun, compact bool, files []string) error {
+	paths := agentInstructionPaths(files)
+	plans, err := scanAgentInstructionFiles(paths)
 	if err != nil {
 		return err
 	}
@@ -65,21 +80,32 @@ func updateAgentInstructionFiles(cmd *cobra.Command, dryRun bool) error {
 		return nil
 	}
 
+	snippet := selectedAgentsSnippet(compact)
 	updated := 0
 	for _, plan := range plans {
 		if plan.Missing {
+			if len(files) > 0 {
+				fmt.Fprintf(cmd.OutOrStdout(), "Skipped %s (file not found)\n", plan.Path)
+			}
 			continue
 		}
-		if err := os.WriteFile(plan.Path, []byte(mergeAgentsBlock(string(plan.Content))), plan.Info.Mode()); err != nil {
+		if err := os.WriteFile(plan.Path, []byte(mergeAgentsBlock(string(plan.Content), snippet)), plan.Info.Mode()); err != nil {
 			return err
 		}
 		fmt.Fprintf(cmd.OutOrStdout(), "Updated %s\n", plan.Path)
 		updated++
 	}
-	if updated == 0 {
+	if updated == 0 && len(files) == 0 {
 		fmt.Fprintln(cmd.OutOrStdout(), "No existing agent instruction files found")
 	}
 	return nil
+}
+
+func agentInstructionPaths(files []string) []string {
+	if len(files) > 0 {
+		return files
+	}
+	return agentInstructionFiles
 }
 
 func scanAgentInstructionFiles(paths []string) ([]agentInstructionFilePlan, error) {
@@ -120,8 +146,8 @@ func (p agentInstructionFilePlan) DryRunMessage() string {
 	return fmt.Sprintf("Would update %s (no managed block yet, would append)", p.Path)
 }
 
-func mergeAgentsBlock(content string) string {
-	block := managedAgentsBlock()
+func mergeAgentsBlock(content string, snippet string) string {
+	block := managedAgentsBlock(snippet)
 	for _, markers := range agentBlockMarkers() {
 		start := strings.Index(content, markers[0])
 		if start >= 0 {
@@ -167,6 +193,13 @@ func agentBlockMarkers() [][2]string {
 	}
 }
 
-func managedAgentsBlock() string {
-	return agentsBeginMarker + "\n" + strings.TrimRight(agentsSnippet, "\n") + "\n" + agentsEndMarker + "\n"
+func managedAgentsBlock(snippet string) string {
+	return agentsBeginMarker + "\n" + strings.TrimRight(snippet, "\n") + "\n" + agentsEndMarker + "\n"
+}
+
+func selectedAgentsSnippet(compact bool) string {
+	if compact {
+		return agentsSnippetCompact
+	}
+	return agentsSnippet
 }

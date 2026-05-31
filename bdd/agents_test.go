@@ -1,10 +1,13 @@
 package bdd
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/cucumber/godog"
 	"os"
 	"strings"
+
+	"github.com/aholbreich/tl/cmd"
 )
 
 // --- agents.feature support -----------------------------------------------
@@ -17,10 +20,12 @@ func initializeAgentsSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^the file "([^"]*)" does not contain "([^"]*)"$`, w.fileDoesNotContain)
 	ctx.Step(`^the file "([^"]*)" does not exist$`, w.fileDoesNotExist)
 	ctx.Step(`^the output contains "([^"]*)"$`, w.outputContains)
+	ctx.Step(`^the output does not contain "([^"]*)"$`, w.outputDoesNotContain)
 	ctx.Step(`^the output contains a "([^"]*)" heading$`, w.outputContainsHeading)
 	ctx.Step(`^the output describes the ready, claim, show, note, and close steps$`, w.outputDescribesWorkflowSteps)
 	ctx.Step(`^the output formats task commands as Markdown code spans$`, w.outputFormatsCommandsAsMarkdownCodeSpans)
 	ctx.Step(`^the output contains these snippets:$`, w.outputContainsSnippets)
+	ctx.Step(`^the compact agents output is shorter than the full agents output$`, w.compactAgentsOutputIsShorter)
 }
 
 func (w *world) fileExistsWithContent(path, content string) error {
@@ -73,6 +78,17 @@ func (w *world) fileDoesNotExist(path string) error {
 	return nil
 }
 
+func (w *world) outputDoesNotContain(needle string) error {
+	combined := w.stdout.String() + w.stderr.String()
+	if w.cmdErr != nil {
+		combined += "\n" + w.cmdErr.Error()
+	}
+	if strings.Contains(combined, needle) {
+		return fmt.Errorf("output contains %q; got:\n%s", needle, combined)
+	}
+	return nil
+}
+
 func (w *world) outputContainsHeading(heading string) error {
 	needle := "## " + heading
 	if !strings.Contains(w.stdout.String(), needle) {
@@ -113,6 +129,21 @@ func (w *world) outputFormatsCommandsAsMarkdownCodeSpans() error {
 		if !strings.Contains(w.stdout.String(), command) {
 			return fmt.Errorf("output does not contain Markdown code span %s; got:\n%s", command, w.stdout.String())
 		}
+	}
+	return nil
+}
+
+func (w *world) compactAgentsOutputIsShorter() error {
+	root := cmd.NewRootCmd()
+	buf := &bytes.Buffer{}
+	root.SetOut(buf)
+	root.SetErr(buf)
+	root.SetArgs([]string{"agents"})
+	if err := root.Execute(); err != nil {
+		return err
+	}
+	if w.stdout.Len() >= buf.Len() {
+		return fmt.Errorf("compact output length %d is not shorter than full output length %d", w.stdout.Len(), buf.Len())
 	}
 	return nil
 }

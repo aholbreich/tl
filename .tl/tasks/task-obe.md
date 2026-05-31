@@ -1,11 +1,11 @@
 ---
 id: task-obe
 title: Add tl agents --compact flag for constrained context
-status: open
+status: done
 priority: medium
 type: feature
 created_at: 2026-05-30T18:38:18Z
-updated_at: 2026-05-30T18:38:18Z
+updated_at: 2026-05-31T20:27:35Z
 created_by: human
 assignee: null
 depends_on: []
@@ -285,3 +285,8 @@ Behavior:
 - The compact snippet should be embedded as a separate constant (agentsSnippetCompact) in cmd/agents.go alongside the existing agentsSnippet.
 - The mergeAgentsBlock() function needs a param or variant for choosing compact vs full.
 - Feature scenarios: --compact stdout, --compact + --write-files, --compact + --file targeting, verify compact content is shorter than full.
+
+## Notes
+
+- 2026-05-31T20:25:43Z [pi:agents-compact] note: Implemented tl agents --compact plus requested --file targeting. Added compact 12-line snippet, --compact flag for stdout and --write-files, repeatable --file support, expanded default agent instruction file list (AGENTS.md, CLAUDE.md, GEMINI_RULES.md, .cursorrules, .aider-rules.md, .github/copilot-instructions.md), BDD scenarios for compact/targeted/dry-run/nonexistent targets, docs updates. Validation: go test ./cmd ./bdd, make bdd, make test passed.
+- 2026-05-31T20:27:35Z [pi:agents-compact] note: Follow-up from review: moved compact snippet text out of cmd/agents.go into embedded cmd/agents_snippet_compact.md, matching the existing full snippet file pattern. Validation: go test ./cmd ./bdd passed.

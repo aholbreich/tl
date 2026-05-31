@@ -1,11 +1,11 @@
 ---
 id: task-2q0
 title: Add tl agents --file flag for targeted updates (scope control)
-status: open
+status: done
 priority: low
 type: feature
 created_at: 2026-05-30T18:24:25Z
-updated_at: 2026-05-30T18:24:25Z
+updated_at: 2026-05-31T20:25:05Z
 created_by: human
 assignee: null
 depends_on: []
@@ -34,3 +34,7 @@ Behavior:
 - The hardcoded agentInstructionFiles variable in cmd/agents.go becomes the default list; --file overrides it.
 - No error if --file names a nonexistent file — just output 'Skipped <file> (not found)' and continue.
 - Add feature scenarios: --file single target, --file multiple targets (repeatable), --file with nonexistent file, --file with --dry-run.
+
+## Notes
+
+- 2026-05-31T20:25:05Z [pi:agents-compact] note: Implemented as part of task-obe compact work: added repeatable tl agents --file support, defaulted known files to AGENTS.md, CLAUDE.md, GEMINI_RULES.md, .cursorrules, .aider-rules.md, and .github/copilot-instructions.md, and covered targeted write/dry-run/nonexistent file behavior in features/agents.feature.

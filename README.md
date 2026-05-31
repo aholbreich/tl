@@ -134,6 +134,21 @@ tl note <id> -m "Initial implementation done."                   # record a hand
 tl close <id>                                                    # mark as done
 ```
 
+### Agent instructions
+
+Bootstrap the tl workflow into existing agent instruction files:
+
+```sh
+tl agents --write-files
+```
+
+For constrained context windows, use the compact guide:
+
+```sh
+tl agents --compact
+tl agents --write-files --compact
+```
+
 Actor identity resolves in order: `--actor` flag > `TL_ACTOR` env >
 `ACTOR_NAME` env > agent auto-detection.
 
@@ -193,7 +208,7 @@ tl show <id> [--json]              # full task detail
 tl history [<id>] [--json]         # event-by-event audit trail
 tl stale                           # claims whose lease has expired
 tl doctor [--json] [--fix] [--force] # scan ledger for integrity issues (optionally repair)
-tl agents [--write-files [--dry-run]] [--compact] # print or install agent workflow guide
+tl agents [--compact] [--write-files [--dry-run] [--file path]] # print or install agent workflow guide
 
 #Exit Codes:
 `0` success · `1` generic · `2` invalid args · `3` task not found · `4` task not ready · `5` already claimed · `7` lock failed
