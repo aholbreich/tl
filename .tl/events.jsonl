@@ -239,3 +239,8 @@
 {"time":"2026-05-31T20:37:52Z","event":"claimed","task_id":"task-ejg","actor":"pi:release-notes"}
 {"time":"2026-05-31T20:38:35Z","event":"note_added","task_id":"task-ejg","actor":"pi:release-notes"}
 {"time":"2026-05-31T20:38:35Z","event":"closed","task_id":"task-ejg","actor":"pi:release-notes"}
+{"time":"2026-05-31T21:11:38Z","event":"note_added","task_id":"task-phl","actor":"pi:promotion-plan"}
+{"time":"2026-05-31T21:11:50Z","event":"dependency_added","task_id":"task-phl"}
+{"time":"2026-05-31T21:11:50Z","event":"reference_added","task_id":"task-phl","value":"README.md"}
+{"time":"2026-05-31T21:11:50Z","event":"reference_added","task_id":"task-phl","value":"docs/comparison.md"}
+{"time":"2026-05-31T21:11:50Z","event":"reference_added","task_id":"task-phl","value":".github/workflows/release.yaml"}
