@@ -195,3 +195,7 @@
 {"time":"2026-05-31T09:54:52Z","event":"cancelled","task_id":"task-a46","actor":"pi:analysis"}
 {"time":"2026-05-31T09:54:57Z","event":"created","task_id":"task-5bc","actor":"human"}
 {"time":"2026-05-31T09:55:26Z","event":"note_added","task_id":"task-5bc","actor":"pi:analysis"}
+{"time":"2026-05-31T10:03:08Z","event":"claimed","task_id":"task-5bc","actor":"pi"}
+{"time":"2026-05-31T10:04:36Z","event":"note_added","task_id":"task-5bc","actor":"pi"}
+{"time":"2026-05-31T10:04:36Z","event":"closed","task_id":"task-5bc","actor":"pi"}
+{"time":"2026-05-31T10:09:07Z","event":"created","task_id":"task-rax","actor":"human"}

@@ -15,15 +15,13 @@ Feature: Create a task
     And the new task has no dependencies
     And an event "created" is recorded for the new task
 
-  # Shortcut version for humans
-  Scenario: Creating a task records without "create" or "add"
+  Scenario: Bare root title is not treated as create
     Given no tasks exist
     When the developer runs `tl "Shortcut syntax"`
-    Then a new task with title "Shortcut syntax" exists
-    And the new task has status "open"
-    And the new task has no dependencies
-    And an event "created" is recorded for the new task
-  
+    Then the command exits with code 2
+    And the output contains "use 'tl create"
+    And no tasks exist
+
   Scenario: add is a synonym for create
     Given no tasks exist
     When the developer runs `tl add "Add login form validation"`

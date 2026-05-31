@@ -12,7 +12,7 @@ Feature: Task references
     Given an initialized task ledger repository
 
   # -------------------------------------------------------------------------
-  # Create — initial references via --ref (repeatable). Bare shorthand inherits.
+  # Create — initial references via --ref (repeatable).
   # -------------------------------------------------------------------------
   Scenario: Creating a task with a single reference
     When the developer runs `tl create "Add login form" --ref src/auth/login.go`
@@ -26,8 +26,8 @@ Feature: Task references
     And the new task has references containing "https://github.com/aholbreich/tl/pull/42"
     And the new task has references containing "JIRA-1234"
 
-  Scenario: The bare shorthand inherits --ref
-    When the developer runs `tl "Add login form" --ref src/auth/login.go --tag auth`
+  Scenario: The add alias accepts references
+    When the developer runs `tl add "Add login form" --ref src/auth/login.go --tag auth`
     Then a new task with title "Add login form" exists
     And the new task has references containing "src/auth/login.go"
     And the new task has tag "auth"

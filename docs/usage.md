@@ -31,7 +31,7 @@ Initialized task ledger at /home/you/project/.tl
 Tip: run `tl completion --install` to enable TAB completion for task IDs.
 ```
 
-Create work. A bare title is enough; flags add structure.
+Create work with `tl create` (or the shorter `tl add` alias); flags add structure.
 
 ```sh
 $ tl create "Add login form validation"
