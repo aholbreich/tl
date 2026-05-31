@@ -3,8 +3,9 @@ id: task-mj2
 title: tl bare — running tl with just a title creates a task (shorthand for tl create)
 status: done
 priority: medium
+type: task
 created_at: 2026-05-17T20:58:34Z
-updated_at: 2026-05-17T21:00:06Z
+updated_at: 2026-05-31T10:10:01Z
 created_by: pi-agent
 assignee: null
 depends_on: []

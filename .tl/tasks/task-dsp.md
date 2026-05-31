@@ -3,8 +3,9 @@ id: task-dsp
 title: Implement tl refine command to update tasks title and description
 status: done
 priority: medium
+type: task
 created_at: 2026-05-22T21:11:13Z
-updated_at: 2026-05-24T16:24:22Z
+updated_at: 2026-05-31T10:10:01Z
 created_by: human
 assignee: null
 depends_on: []

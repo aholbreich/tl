@@ -3,8 +3,9 @@ id: task-029
 title: Add horizontal README table of contents
 status: done
 priority: medium
+type: task
 created_at: 2026-05-23T21:03:14Z
-updated_at: 2026-05-23T21:03:40Z
+updated_at: 2026-05-31T10:10:01Z
 created_by: human
 assignee: null
 depends_on: []

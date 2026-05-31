@@ -3,8 +3,9 @@ id: task-qf4
 title: Add install.sh for release binaries
 status: done
 priority: medium
+type: task
 created_at: 2026-05-23T20:58:30Z
-updated_at: 2026-05-23T20:59:41Z
+updated_at: 2026-05-31T10:10:01Z
 created_by: human
 assignee: null
 depends_on: []
