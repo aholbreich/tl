@@ -61,6 +61,39 @@ brew install tl
 
 Prebuilt binaries are available for **macOS (Intel + Apple Silicon)** and **Linux (amd64 + arm64)**.
 
+### Arch Linux / Omarchy (AUR — coming soon)
+
+> **Coming soon:** the `tl-bin` package is prepared, but publication is waiting
+> for the AUR to reopen new-account registration. The commands below will work
+> after the package is published.
+
+On Omarchy, use its AUR package helper:
+
+```sh
+omarchy pkg aur add tl-bin
+```
+
+On other Arch-based systems, use an AUR helper such as `yay`:
+
+```sh
+yay -S tl-bin
+```
+
+Or build and install directly from the AUR:
+
+```sh
+git clone https://aur.archlinux.org/tl-bin.git
+cd tl-bin
+makepkg -si
+```
+
+The AUR package is named `tl-bin` because it packages the prebuilt GitHub
+release binary. It installs `/usr/bin/tl`, so the command remains `tl`:
+
+```sh
+tl --version
+```
+
 ### RPM (Fedora / Red Hat)
 
 Add the Holbreich RPM repository:

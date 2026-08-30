@@ -5,7 +5,7 @@ status: open
 priority: high
 type: chore
 created_at: 2026-05-30T18:38:12Z
-updated_at: 2026-05-30T18:38:12Z
+updated_at: 2026-08-30T19:24:01Z
 created_by: human
 assignee: null
 depends_on: []
@@ -46,3 +46,8 @@ Implementation plan:
 - Restructure sections to: (1) Hero + badges + demo, (2) Why tl? (lead with agent coordination), (3) Quickstart (with init + agents one-liner), (4) Installation Options (brew first, RPM collapsed), (5) Commands, (6) How it compares, (7) Development, (8) Further reading
 - Add 'tl completion --install' alongside 'tl init' in Quickstart
 - Ensure all tl agents flag changes from task-xb3 (--write-files rename) are reflected
+
+## Notes
+
+- 2026-08-30T19:07:01Z [pi] note: Added an Arch Linux / Omarchy AUR installation section to README.md. Prepared tl-bin packaging under packaging/aur with PKGBUILD, generated .SRCINFO, and publishing documentation. Verified makepkg builds tl-bin 0.9.0-1 successfully in /tmp; no project commit made. AUR package is not published yet, so README install commands become live after first AUR push.
+- 2026-08-30T19:24:01Z [pi] note: Marked AUR installation as coming soon while AUR registration is paused. Installed the locally built tl-bin 0.9.0-1 package through pacman; /usr/bin/tl reports tl version 0.9.0-0-db9cd9b. Re-verified release source checksums successfully. Preparing an unpushed project commit.

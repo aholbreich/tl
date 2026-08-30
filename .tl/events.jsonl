@@ -247,3 +247,9 @@
 {"time":"2026-06-04T13:05:07Z","event":"created","task_id":"task-ylk","actor":"human"}
 {"time":"2026-06-04T13:05:07Z","event":"reference_added","task_id":"task-ylk","actor":"human","value":"docs/comparison.md"}
 {"time":"2026-06-04T13:05:26Z","event":"created","task_id":"task-wke","actor":"human"}
+{"time":"2026-08-30T19:06:10Z","event":"claimed","task_id":"task-z31","actor":"pi"}
+{"time":"2026-08-30T19:07:01Z","event":"note_added","task_id":"task-z31","actor":"pi"}
+{"time":"2026-08-30T19:07:01Z","event":"released","task_id":"task-z31","actor":"pi"}
+{"time":"2026-08-30T19:21:29Z","event":"claimed","task_id":"task-z31","actor":"pi"}
+{"time":"2026-08-30T19:24:01Z","event":"note_added","task_id":"task-z31","actor":"pi"}
+{"time":"2026-08-30T19:24:01Z","event":"released","task_id":"task-z31","actor":"pi"}

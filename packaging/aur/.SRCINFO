@@ -1,0 +1,21 @@
+pkgbase = tl-bin
+	pkgdesc = Git-native task ledger that lets humans and AI coding agents coordinate work in one repo
+	pkgver = 0.9.0
+	pkgrel = 1
+	url = https://github.com/aholbreich/tl
+	arch = x86_64
+	arch = aarch64
+	license = MIT
+	optdepends = bash-completion: bash shell completion
+	provides = tl
+	conflicts = tl
+	source_x86_64 = tl-0.9.0-x86_64.tar.gz::https://github.com/aholbreich/tl/releases/download/0.9.0/tl-linux-amd64.tar.gz
+	source_x86_64 = LICENSE::https://raw.githubusercontent.com/aholbreich/tl/0.9.0/LICENSE
+	sha256sums_x86_64 = 261ec5a4003fb892469b69966e0ce295c8af3a6f7d3b934c8f4f687d0484d5af
+	sha256sums_x86_64 = 4636c186f0d359cc0dd2d46155b6fb9df70d9b30489b9a6fb9e9d48c6a7f570a
+	source_aarch64 = tl-0.9.0-aarch64.tar.gz::https://github.com/aholbreich/tl/releases/download/0.9.0/tl-linux-arm64.tar.gz
+	source_aarch64 = LICENSE::https://raw.githubusercontent.com/aholbreich/tl/0.9.0/LICENSE
+	sha256sums_aarch64 = fe28c71b261d71c0ba6fa5b1564aeabfcc740a635fd169fc38f2b48657b1a94e
+	sha256sums_aarch64 = 4636c186f0d359cc0dd2d46155b6fb9df70d9b30489b9a6fb9e9d48c6a7f570a
+
+pkgname = tl-bin
