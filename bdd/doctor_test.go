@@ -43,6 +43,9 @@ func initializeDoctorSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^a task "([^"]*)" whose Notes section contains lines that do not match the canonical format$`, w.doctorMalformedNotes)
 	ctx.Step(`^the ledger has no config.yaml file$`, w.doctorNoConfig)
 	ctx.Step(`^the config.yaml contains content that is not valid YAML$`, w.doctorInvalidConfig)
+	ctx.Step(`^the config has no ledger format identity$`, w.doctorConfigWithoutFormat)
+	ctx.Step(`^the config declares ledger format "([^"]*)"$`, w.doctorConfigWithFormat)
+	ctx.Step(`^the ledger has no human-readable guide$`, w.doctorNoLedgerGuide)
 	ctx.Step(`^a ledger with (\d+) tasks$`, w.doctorLedgerWithTasks)
 	ctx.Step(`^a ledger with (\d+) events$`, w.doctorLedgerWithEvents)
 
@@ -61,6 +64,8 @@ func initializeDoctorSteps(ctx *godog.ScenarioContext, w *world) {
 
 	// Assertions — --fix behaviour.
 	ctx.Step(`^the doctor reports the "([^"]*)" issue for "([^"]*)" as fixed$`, w.doctorReportsFixed)
+	ctx.Step(`^the doctor reports the "([^"]*)" issue as fixed$`, w.doctorReportsCategoryFixed)
+	ctx.Step(`^the doctor reports the human-readable ledger guide as created$`, w.doctorReportsLedgerGuideCreated)
 	ctx.Step(`^"([^"]*)" no longer depends on "([^"]*)"$`, w.doctorNoLongerDependsOn)
 	ctx.Step(`^the doctor reports the orphaned file as removed$`, w.doctorReportsRemoved)
 	ctx.Step(`^the file "([^"]*)" no longer exists$`, w.doctorFileNoLongerExists)
@@ -266,6 +271,38 @@ func (w *world) doctorInvalidConfig() error {
 	return os.WriteFile(filepath.Join(".tl", "config.yaml"), []byte("::: not: valid: yaml\n  - broken"), 0o644)
 }
 
+func (w *world) doctorConfigWithoutFormat() error {
+	path := filepath.Join(".tl", "config.yaml")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var kept []string
+	for _, line := range strings.Split(string(data), "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "format:") {
+			continue
+		}
+		kept = append(kept, line)
+	}
+	return os.WriteFile(path, []byte(strings.Join(kept, "\n")), 0o644)
+}
+
+func (w *world) doctorConfigWithFormat(format string) error {
+	if err := w.doctorConfigWithoutFormat(); err != nil {
+		return err
+	}
+	path := filepath.Join(".tl", "config.yaml")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, append([]byte("format: "+format+"\n"), data...), 0o644)
+}
+
+func (w *world) doctorNoLedgerGuide() error {
+	return os.Remove(filepath.Join(".tl", "README.md"))
+}
+
 func (w *world) doctorLedgerWithTasks(n int) error {
 	for i := 0; i < n; i++ {
 		t := doctorValidTask(fmt.Sprintf("task-s%04d", i))
@@ -436,6 +473,23 @@ func jsonStr(raw json.RawMessage) string {
 
 func (w *world) doctorReportsFixed(category, taskID string) error {
 	return w.assertFixOutput("fixed", category, taskID)
+}
+
+func (w *world) doctorReportsCategoryFixed(category string) error {
+	out := w.stdout.String()
+	if !strings.Contains(out, "fixed") || !strings.Contains(out, category) {
+		return fmt.Errorf("fix output does not report a fixed %q issue; got:\n%s", category, out)
+	}
+	return nil
+}
+
+func (w *world) doctorReportsLedgerGuideCreated() error {
+	out := w.stdout.String()
+	if !strings.Contains(out, "created") || !strings.Contains(out, doctor.CategoryFilesystem) ||
+		!strings.Contains(out, "ledger README.md") {
+		return fmt.Errorf("fix output does not report the ledger guide as created; got:\n%s", out)
+	}
+	return nil
 }
 
 func (w *world) doctorReportsRemoved() error {

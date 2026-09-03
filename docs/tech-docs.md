@@ -39,7 +39,8 @@ actor — there is no separate heartbeat command.
 
 ```
 .tl/
-  config.yaml      # defaults
+  README.md        # human-facing ledger identity and file guide
+  config.yaml      # defaults plus the machine-readable `format: tl` marker
   tasks/
     task-<3>.md    # one file per task (Markdown + YAML frontmatter)
   events.jsonl     # append-only audit trail

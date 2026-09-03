@@ -2,11 +2,12 @@ package bdd
 
 import (
 	"fmt"
-	"github.com/cucumber/godog"
 	"os"
+	"path/filepath"
 	"strings"
 
-	"path/filepath"
+	"github.com/cucumber/godog"
+	"gopkg.in/yaml.v3"
 )
 
 // --- init.feature support -------------------------------------------------
@@ -15,6 +16,8 @@ func initializeInitSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^the current directory has no task ledger$`, w.currentDirHasNoLedger)
 	ctx.Step(`^the current directory already has a task ledger$`, w.currentDirAlreadyHasLedger)
 	ctx.Step(`^the directory contains a task ledger config file$`, w.dirContainsConfigFile)
+	ctx.Step(`^the config identifies the ledger format as "([^"]*)"$`, w.configIdentifiesLedgerFormat)
+	ctx.Step(`^the directory contains a human-readable ledger guide$`, w.dirContainsLedgerGuide)
 	ctx.Step(`^the directory contains an empty tasks folder$`, w.dirContainsEmptyTasksFolder)
 	ctx.Step(`^the directory contains an empty event journal$`, w.dirContainsEmptyEventJournal)
 	ctx.Step(`^the command reports that the ledger already exists$`, w.cmdReportsAlreadyExists)
@@ -46,6 +49,35 @@ func (w *world) dirContainsConfigFile() error {
 	}
 	if info.Size() == 0 {
 		return fmt.Errorf("config file is empty")
+	}
+	return nil
+}
+
+func (w *world) configIdentifiesLedgerFormat(want string) error {
+	data, err := os.ReadFile(filepath.Join(".tl", "config.yaml"))
+	if err != nil {
+		return err
+	}
+	var config struct {
+		Format string `yaml:"format"`
+	}
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return err
+	}
+	if config.Format != want {
+		return fmt.Errorf("ledger format is %q, expected %q", config.Format, want)
+	}
+	return nil
+}
+
+func (w *world) dirContainsLedgerGuide() error {
+	data, err := os.ReadFile(filepath.Join(".tl", "README.md"))
+	if err != nil {
+		return fmt.Errorf("ledger guide missing: %w", err)
+	}
+	if !strings.Contains(string(data), "# tl task ledger") ||
+		!strings.Contains(string(data), "https://github.com/aholbreich/tl") {
+		return fmt.Errorf("ledger guide does not identify tl: %q", data)
 	}
 	return nil
 }

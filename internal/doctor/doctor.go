@@ -66,6 +66,8 @@ const (
 	fixOrphanEvent       = "orphan-event"
 	fixEventJournalJSONL = "event-journal-jsonl"
 	fixEmptyType         = "empty-type"
+	fixConfigFormat      = "config-format"
+	fixLedgerReadme      = "ledger-readme"
 )
 
 // Diagnostic is one finding. The exported fields form the stable JSON shape;
@@ -84,7 +86,7 @@ type Diagnostic struct {
 // Repair records a fix that was applied, with the verb to report it.
 type Repair struct {
 	Diagnostic Diagnostic
-	Verb       string // fixed | removed | cleared | released
+	Verb       string // fixed | created | removed | cleared | released
 }
 
 var (
@@ -107,6 +109,7 @@ func Diagnose(ledger string) ([]Diagnostic, error) {
 	var diags []Diagnostic
 
 	diags = append(diags, checkConfig(ledger)...)
+	diags = append(diags, checkLedgerReadme(ledger)...)
 
 	tasksDir := filepath.Join(ledger, repo.TasksDir)
 	entries, err := os.ReadDir(tasksDir)
@@ -288,6 +291,10 @@ func applyRepair(ledger string, d Diagnostic, force bool) (string, error) {
 			return "", err
 		}
 		return "fixed", events.Append(ledger, events.Event{Event: "refined", TaskID: t.ID, Value: "type: task"})
+	case fixConfigFormat:
+		return "fixed", repo.AddFormatMarker(ledger)
+	case fixLedgerReadme:
+		return "created", repo.CreateLedgerReadme(ledger)
 	default:
 		return "", os.ErrInvalid
 	}
@@ -639,11 +646,49 @@ func splitJSONValues(line []byte) ([][]byte, error) {
 }
 
 func checkConfig(ledger string) []Diagnostic {
-	if _, err := repo.LoadConfig(ledger); err != nil {
+	cfg, err := repo.LoadConfig(ledger)
+	if err != nil {
 		if os.IsNotExist(err) {
 			return []Diagnostic{{Severity: SeverityError, Category: CategoryConfig, Message: "config.yaml is missing"}}
 		}
 		return []Diagnostic{{Severity: SeverityError, Category: CategoryConfig, Message: "config.yaml is invalid: " + err.Error()}}
+	}
+	if cfg.Format == "" {
+		return []Diagnostic{{
+			Severity: SeverityWarning, Category: CategoryConfig,
+			Message: "config.yaml is missing the tl format marker",
+			Fixable: true, fixKind: fixConfigFormat,
+		}}
+	}
+	if cfg.Format != repo.LedgerFormat {
+		return []Diagnostic{{
+			Severity: SeverityError, Category: CategoryConfig,
+			Message: fmt.Sprintf("config.yaml declares unsupported format %q", cfg.Format),
+		}}
+	}
+	return nil
+}
+
+func checkLedgerReadme(ledger string) []Diagnostic {
+	info, err := os.Stat(filepath.Join(ledger, repo.LedgerReadme))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []Diagnostic{{
+				Severity: SeverityWarning, Category: CategoryFilesystem,
+				Message: "ledger README.md is missing",
+				Fixable: true, fixKind: fixLedgerReadme,
+			}}
+		}
+		return []Diagnostic{{
+			Severity: SeverityError, Category: CategoryFilesystem,
+			Message: "ledger README.md cannot be inspected: " + err.Error(),
+		}}
+	}
+	if !info.Mode().IsRegular() {
+		return []Diagnostic{{
+			Severity: SeverityError, Category: CategoryFilesystem,
+			Message: "ledger README.md is not a regular file",
+		}}
 	}
 	return nil
 }

@@ -137,6 +137,11 @@ Feature: Diagnose ledger integrity
     When the developer runs `tl doctor`
     Then the doctor reports a "filesystem" issue with severity "warning"
 
+  Scenario: A missing human-readable ledger guide is a fixable warning
+    Given the ledger has no human-readable guide
+    When the developer runs `tl doctor`
+    Then the doctor reports a "filesystem" issue with severity "warning"
+
   Scenario: A task file that cannot be read is an error
     Given a task file "task-corrupted.md" that cannot be read
     When the developer runs `tl doctor`
@@ -171,9 +176,15 @@ Feature: Diagnose ledger integrity
     Then the doctor reports a "config" issue with severity "error"
 
     Examples:
-      | setup                                                  |
+      | setup                                                   |
       | the ledger has no config.yaml file                      |
       | the config.yaml contains content that is not valid YAML |
+      | the config declares ledger format "other"               |
+
+  Scenario: A missing ledger format identity is a fixable warning
+    Given the config has no ledger format identity
+    When the developer runs `tl doctor`
+    Then the doctor reports a "config" issue with severity "warning"
 
   # -------------------------------------------------------------------------
   # Scale — informational warnings when the ledger grows large. The
@@ -223,6 +234,18 @@ Feature: Diagnose ledger integrity
     When the developer runs `tl doctor --fix`
     Then the doctor reports the orphaned file as removed
     And the file "task-abc.md.tmp" no longer exists
+
+  Scenario: --fix adds the ledger format identity
+    Given the config has no ledger format identity
+    When the developer runs `tl doctor --fix`
+    Then the doctor reports the "config" issue as fixed
+    And the config identifies the ledger format as "tl"
+
+  Scenario: --fix creates the human-readable ledger guide
+    Given the ledger has no human-readable guide
+    When the developer runs `tl doctor --fix`
+    Then the doctor reports the human-readable ledger guide as created
+    And the directory contains a human-readable ledger guide
 
   Scenario: --fix clears leftover claim data from an open task
     Given a task "task-abc" with status "open" that still has claim data set

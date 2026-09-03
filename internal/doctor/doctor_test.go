@@ -79,6 +79,83 @@ func TestCleanLedgerHasNoIssues(t *testing.T) {
 	}
 }
 
+func TestMissingLedgerIdentityIsFixable(t *testing.T) {
+	ledger := newLedger(t)
+	configPath := filepath.Join(ledger, repo.ConfigFile)
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacy := strings.Replace(string(data), "format: tl\n", "", 1)
+	if err := os.WriteFile(configPath, []byte(legacy), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(filepath.Join(ledger, repo.LedgerReadme)); err != nil {
+		t.Fatal(err)
+	}
+
+	diags, err := Diagnose(ledger)
+	if err != nil {
+		t.Fatalf("Diagnose: %v", err)
+	}
+	if len(diags) != 2 {
+		t.Fatalf("expected two ledger identity warnings, got %+v", diags)
+	}
+	for _, category := range []string{CategoryConfig, CategoryFilesystem} {
+		d := findFor(diags, category, "")
+		if d == nil || d.Severity != SeverityWarning || !d.Fixable {
+			t.Fatalf("expected a fixable %s warning, got %+v", category, d)
+		}
+	}
+
+	applied, unfixable, err := Fix(ledger, false)
+	if err != nil {
+		t.Fatalf("Fix: %v", err)
+	}
+	if len(applied) != 2 || len(unfixable) != 0 {
+		t.Fatalf("expected two repairs and no remaining issues, got repairs=%+v unfixable=%+v", applied, unfixable)
+	}
+	cfg, err := repo.LoadConfig(ledger)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Format != repo.LedgerFormat {
+		t.Fatalf("format after repair: got %q, want %q", cfg.Format, repo.LedgerFormat)
+	}
+	if _, err := os.Stat(filepath.Join(ledger, repo.LedgerReadme)); err != nil {
+		t.Fatalf("ledger README after repair: %v", err)
+	}
+	after, err := Diagnose(ledger)
+	if err != nil {
+		t.Fatalf("Diagnose after fix: %v", err)
+	}
+	if len(after) != 0 {
+		t.Fatalf("identity diagnostics remained after fix: %+v", after)
+	}
+}
+
+func TestConflictingLedgerFormatIsAnError(t *testing.T) {
+	ledger := newLedger(t)
+	path := filepath.Join(ledger, repo.ConfigFile)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	conflicting := strings.Replace(string(data), "format: tl", "format: other", 1)
+	if err := os.WriteFile(path, []byte(conflicting), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	diags, err := Diagnose(ledger)
+	if err != nil {
+		t.Fatalf("Diagnose: %v", err)
+	}
+	d := findFor(diags, CategoryConfig, "")
+	if d == nil || d.Severity != SeverityError || d.Fixable {
+		t.Fatalf("expected a non-fixable config error, got %+v", d)
+	}
+}
+
 func TestFrontmatterChecks(t *testing.T) {
 	ledger := newLedger(t)
 	bad := "---\nid: task-bad\ntitle: \"\"\nstatus: super-duper\npriority: urgent\ntype: \"\"\n" +

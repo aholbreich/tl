@@ -268,3 +268,14 @@
 {"time":"2026-08-30T19:51:48Z","event":"reference_added","task_id":"task-tvp","value":"packaging/aur/README.md"}
 {"time":"2026-08-30T19:51:48Z","event":"reference_added","task_id":"task-tvp","value":"packaging/aur/PKGBUILD"}
 {"time":"2026-08-30T19:51:48Z","event":"reference_added","task_id":"task-tvp","value":"packaging/aur/.SRCINFO"}
+{"time":"2026-09-03T21:54:08Z","event":"claimed","task_id":"task-z31","actor":"pi"}
+{"time":"2026-09-03T21:55:52Z","event":"note_added","task_id":"task-z31","actor":"pi"}
+{"time":"2026-09-03T21:55:52Z","event":"closed","task_id":"task-z31","actor":"pi"}
+{"time":"2026-09-03T22:16:30Z","event":"created","task_id":"task-5q9","actor":"pi"}
+{"time":"2026-09-03T22:16:30Z","event":"reference_added","task_id":"task-5q9","actor":"pi","value":"internal/repo/repo.go"}
+{"time":"2026-09-03T22:16:30Z","event":"reference_added","task_id":"task-5q9","actor":"pi","value":"internal/doctor/doctor.go"}
+{"time":"2026-09-03T22:16:30Z","event":"reference_added","task_id":"task-5q9","actor":"pi","value":"features/init.feature"}
+{"time":"2026-09-03T22:16:30Z","event":"reference_added","task_id":"task-5q9","actor":"pi","value":"features/doctor.feature"}
+{"time":"2026-09-03T22:16:30Z","event":"claimed","task_id":"task-5q9","actor":"pi"}
+{"time":"2026-09-03T22:25:12Z","event":"note_added","task_id":"task-5q9","actor":"pi"}
+{"time":"2026-09-03T22:25:12Z","event":"closed","task_id":"task-5q9","actor":"pi"}

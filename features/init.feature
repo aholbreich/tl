@@ -8,6 +8,8 @@ Feature: Initialize a task ledger repository
     Given the current directory has no task ledger
     When the developer runs `tl init`
     Then the directory contains a task ledger config file
+    And the config identifies the ledger format as "tl"
+    And the directory contains a human-readable ledger guide
     And the directory contains an empty tasks folder
     And the directory contains an empty event journal
     And the output contains "tl completion --install"

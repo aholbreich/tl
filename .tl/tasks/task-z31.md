@@ -1,11 +1,11 @@
 ---
 id: task-z31
 title: 'Overhaul README installation section: reorder hooks, clean up RPM, add tl init + agents flow'
-status: open
+status: done
 priority: high
 type: chore
 created_at: 2026-05-30T18:38:12Z
-updated_at: 2026-08-30T19:24:01Z
+updated_at: 2026-09-03T21:55:52Z
 created_by: human
 assignee: null
 depends_on: []
@@ -51,3 +51,4 @@ Implementation plan:
 
 - 2026-08-30T19:07:01Z [pi] note: Added an Arch Linux / Omarchy AUR installation section to README.md. Prepared tl-bin packaging under packaging/aur with PKGBUILD, generated .SRCINFO, and publishing documentation. Verified makepkg builds tl-bin 0.9.0-1 successfully in /tmp; no project commit made. AUR package is not published yet, so README install commands become live after first AUR push.
 - 2026-08-30T19:24:01Z [pi] note: Marked AUR installation as coming soon while AUR registration is paused. Installed the locally built tl-bin 0.9.0-1 package through pacman; /usr/bin/tl reports tl version 0.9.0-0-db9cd9b. Re-verified release source checksums successfully. Preparing an unpushed project commit.
+- 2026-09-03T21:55:52Z [pi] note: README overhaul committed (21629f7). New structure: hero+quick-start one-liner → Why tl (agent coordination lead) → Quickstart (init + completion --install) → Setup for agent collaboration (agents --write-files, agent loop with --actor) → Installation Options (brew/AUR/script/Windows/source mainline, RPM in <details>) → Commands → How it compares → Development → Further reading. Verified all TOC anchors resolve.

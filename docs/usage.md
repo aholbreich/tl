@@ -5,7 +5,7 @@ This is a walkthrough, not a flag reference. Task IDs are random
 
 A few facts that make the rest read more easily:
 
-- State lives in `.tl/` — `config.yaml`, one Markdown file per task under `tasks/`, and an append-only `events.jsonl` log.
+- State lives in `.tl/` — `config.yaml`, a human-facing `README.md`, one Markdown file per task under `tasks/`, and an append-only `events.jsonl` log.
 - Mutating commands (`create`, `claim`, `note`, `close`, …) append a line to `events.jsonl`. Read commands (`list`, `show`, `ready`, `history`) take `--json`.
 - Identity resolves in order: `--actor` flag, then `TL_ACTOR`, `ACTOR_NAME`, then agent auto-detection. Set `TL_ACTOR` once per session and forget about it.
 
