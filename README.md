@@ -7,43 +7,111 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/aholbreich/tl)](https://goreportcard.com/report/github.com/aholbreich/tl)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+> **Quick start** — the shortest path to a shared human-and-agent task ledger:
+>
+> ```sh
+> brew install aholbreich/tap/tl && tl init && tl agents --write-files
+> ```
+>
+> Then `tl ready` to see what's open, `tl claim <id>` to take a task, and
+> `tl close <id>` when it's done. Install options for every platform are
+> [below](#installation-options).
+
 <img src=".github/tl-demo.svg" alt="tl demo - init, create, ready, claim, note, close" width="100%">
 
-## Why tl cli?
+## Why tl?
 
- Humans and AI coding agents need to coordinate work on the same repository. Chat disappears. `TODO.md` don't scale. GitHub Issues are remote-first and public.
+AI coding agents are a regular part of software teams now, and the hardest
+problem in a repository is no longer writing code — it is keeping humans and
+agents coordinated. Chat threads disappear. `TODO.md` files drift. GitHub
+Issues live on a remote server and don't follow the code.
 
-`tl` gives every repository a small local task ledger that both humans and agents can read and update - without a daemon, a database, or a remote service.
+`tl` gives every repository a small, local task ledger that both humans and
+agents read and update — no daemon, no database, no remote service. Its
+differentiator from other Git-native trackers is **agent-safe coordination**:
+explicit claims with time-limited leases, dependency-aware `ready` lists,
+detectable stale work, and a recorded handoff trail — all in state you can
+read, `diff`, and reason about with any tool.
 
-- **Agent-safe coordination:** claims are explicit, stale work is detectable, handoffs are recorded
-- **Git-native:** state lives in `.tl/` - commit it, diff it, branch it
-- **Human-readable:** tasks are plain Markdown with YAML frontmatter
-- **Agent-readable:** every read command supports `--json` and `--actor`
-- **Handoff-friendly:** notes and references preserve context across sessions and actors. Task centered. 
-- **Flexible:** tasks are the unit of work — `tl` adapts to your flow
-- **Boring by design:** no daemon, no database, no git hooks, no automatic push (you decide)
+- **Agent-safe coordination:** claims are explicit and lease-based, stale work is detectable, handoffs are recorded — agents don't silently step on each other
+- **Dependency-aware:** `tl ready` only lists work whose blockers are done
+- **Git-native:** state lives in `.tl/` — commit it, diff it, branch it, review it in any PR
+- **Human-readable:** tasks are plain Markdown with YAML frontmatter — read or edit any task in your editor
+- **Agent-readable:** every read command supports `--json`, every write can be attributed with `--actor`
+- **Boring by design:** no daemon, no database, no git hooks, no automatic push — you decide when to sync
 
-**Contents:** [How it compares](#how-tl-compares) · [Installation Options](#installation-options) · [Quickstart](#quickstart) · [Commands](#commands)  · [Development](#development) · [Further reading](#further-reading)
+For an honest feature-by-feature comparison with the nearest tools —
+[Beads](https://github.com/steveyegge/beads),
+[Backlog.md](https://github.com/MrLesk/Backlog.md) — and with GitHub Issues,
+see [How tl cli compares](#how-tl-cli-compares).
 
----
-
-## How tl cli compares
-
-`tl` shares a category with [Beads](https://github.com/steveyegge/beads) and
-[Backlog.md](https://github.com/MrLesk/Backlog.md): Git-native task trackers for
-humans **and** AI coding agents. The short version — `tl` is the files-only,
-no-database option, and its one differentiator is **agent-safe coordination
-with readable, Git-native state**: explicit claims, detectable stale work,
-computable dependencies, recorded handoffs, everything inspectable by hand.
-
-Feature-by-feature, including the honest "why `tl` and not Beads / Backlog.md":
-**[`docs/comparison.md`](docs/comparison.md)**.
+**Contents:** [Quickstart](#quickstart) · [Setup for agent collaboration](#setup-for-agent-collaboration) · [Installation Options](#installation-options) · [Commands](#commands) · [How tl cli compares](#how-tl-cli-compares) · [Development](#development) · [Further reading](#further-reading)
 
 ---
 
+## Quickstart
+
+One `tl init` per repository creates the ledger and nothing else:
+
+```sh
+tl init                                                          # create .tl/ (once per repo)
+tl completion --install                                          # TAB-complete task IDs (one-time)
+tl create "Add login form validation"                            # add a task
+tl create "Refactor auth errors" -t chore -p low --tag auth      # with type, priority, tag
+tl list                                                          # see everything
+tl show <id>                                                     # full task detail
+```
+
+Take a task from `ready`, work it, and close it:
+
+```sh
+tl ready                              # unclaimed, unblocked tasks
+tl claim <id>                         # take a time-limited lease (re-run = heartbeat)
+tl note <id> -m "Initial pass done."  # record progress for the next person
+tl close <id>                         # done and verified
+```
+
+### Setup for agent collaboration
+
+Once the ledger exists, hand your agents the playbook in one step:
+
+```sh
+tl agents --write-files                # merge the tl workflow into AGENTS.md, CLAUDE.md, …
+```
+
+This injects a managed workflow block into the agent instruction files already
+present in your repo (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`, and friends),
+so every agent that reads them also knows how to use `tl`. For constrained
+context windows:
+
+```sh
+tl agents --compact                    # print the short version
+tl agents --write-files --compact      # write the short version
+```
+
+From then on, the agent loop is:
+
+```sh
+tl ready --json                          # what's claimable right now?
+tl claim <id> --actor agent-a            # take a lease (and say who you are)
+tl show <id>                             # read the task in full
+tl note <id> -m "Blocked on the API key; handing back." --actor agent-a
+tl release <id> --actor agent-a          # step away cleanly — or tl close when done
+```
+
+Identity resolves in order: `--actor` flag > `TL_ACTOR` env > `ACTOR_NAME` env
+> agent auto-detection (Claude Code, Codex, aider, Windsurf, pi, …). Setting
+`TL_ACTOR` once per session is the easiest way to stay attributed.
+
+---
 
 ## Installation Options
 
+Latest releases are published to the
+[GitHub Releases page](https://github.com/aholbreich/tl/releases/latest) as
+prebuilt archives for **Linux** and **macOS** (amd64 + arm64) and **Windows**
+(amd64 + arm64). Every release triggers an automatic update of the Homebrew
+tap and the RPM repository.
 
 ### Homebrew (macOS / Linux)
 
@@ -59,13 +127,11 @@ brew tap aholbreich/tap
 brew install tl
 ```
 
-Prebuilt binaries are available for **macOS (Intel + Apple Silicon)** and **Linux (amd64 + arm64)**.
-
 ### Arch Linux / Omarchy (AUR — coming soon)
 
 > **Coming soon:** the `tl-bin` package is prepared, but publication is waiting
-> for the AUR to reopen new-account registration. The commands below will work
-> after the package is published.
+> for AUR account registration. The commands below will work after the package
+> is published.
 
 On Omarchy, use its AUR package helper:
 
@@ -88,13 +154,43 @@ makepkg -si
 ```
 
 The AUR package is named `tl-bin` because it packages the prebuilt GitHub
-release binary. It installs `/usr/bin/tl`, so the command remains `tl`:
+release binary. It installs `/usr/bin/tl`, so the command stays `tl`.
+
+### Install script (macOS / Linux)
 
 ```sh
-tl --version
+curl -fsSL https://raw.githubusercontent.com/aholbreich/tl/main/install.sh | sh
 ```
 
-### RPM (Fedora / Red Hat)
+Install a specific version or target directory:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/aholbreich/tl/main/install.sh | sh -s -- --version 0.9.0
+curl -fsSL https://raw.githubusercontent.com/aholbreich/tl/main/install.sh | sh -s -- --bin-dir "$HOME/.local/bin"
+```
+
+### Windows
+
+Download the latest `tl-windows-<arch>.zip` from the
+[Releases page](https://github.com/aholbreich/tl/releases/latest) and unpack
+`tl.exe` into a directory on your `PATH`.
+
+### From source
+
+```sh
+git clone https://github.com/aholbreich/tl
+cd tl
+make install                # installs `tl` to $HOME/bin
+```
+
+Cross-platform release archives:
+
+```sh
+make dists                  # tl-linux-amd64.tar.gz, tl-darwin-arm64.tar.gz, …
+```
+
+<details>
+<summary>RPM (Fedora / Red Hat) — repo-based install</summary>
 
 Add the Holbreich RPM repository:
 
@@ -116,91 +212,7 @@ tl --version
 
 If you run into issues with the RPM repository, see the
 [rpm-repo project](https://github.com/aholbreich/rpm-repo).
-
-### Install script (macOS / Linux)
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/aholbreich/tl/main/install.sh | sh
-```
-
-Install a specific version or target directory:
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/aholbreich/tl/main/install.sh | sh -s -- --version 0.4.4
-curl -fsSL https://raw.githubusercontent.com/aholbreich/tl/main/install.sh | sh -s -- --bin-dir "$HOME/.local/bin"
-```
-
-
-### From source
-
-```sh
-git clone https://github.com/aholbreich/tl
-cd tl
-make install                # installs `tl` to $HOME/bin
-```
-
-Cross-platform release archives:
-
-```sh
-make dists                  # tl-linux-amd64.tar.gz, tl-darwin-arm64.tar.gz, …
-```
-
----
-
-## Quickstart
-
-```sh
-tl init                                                          # one-time per repo
-tl create "Add login form validation"
-tl create "Refactor auth errors" -t chore -p low --tag auth
-tl list
-tl show <id>                                                     # full id or bare short code
-```
-
-Agent workflow:
-
-```sh
-tl ready --json                                                  # what's available?
-tl claim <id>                                                    # take a lease (actor auto-detected)
-tl show <id>                                                     # read the details
-tl note <id> -m "Initial implementation done."                   # record a handoff note
-tl close <id>                                                    # mark as done
-```
-
-### Agent instructions
-
-Bootstrap the tl workflow into existing agent instruction files:
-
-```sh
-tl agents --write-files
-```
-
-For constrained context windows, use the compact guide:
-
-```sh
-tl agents --compact
-tl agents --write-files --compact
-```
-
-Actor identity resolves in order: `--actor` flag > `TL_ACTOR` env >
-`ACTOR_NAME` env > agent auto-detection.
-
-### Shell completion
-
-`tl` ships completions for bash, zsh, fish, and PowerShell. Pressing TAB on
-a `TASK_ID` argument suggests the actual task IDs from the current ledger.
-
-```sh
-tl completion --install            # auto-detect shell from $SHELL
-tl completion --install bash       # or pick one explicitly
-```
-
-The script is written to the canonical XDG path for the chosen shell:
-`~/.local/share/bash-completion/completions/tl` (bash),
-`~/.config/fish/completions/tl.fish` (fish), `~/.zsh/completions/_tl` (zsh —
-plus an fpath line to add to `~/.zshrc`). Open a new shell to activate.
-
-For a one-off in the current session: `source <(tl completion bash)`.
+</details>
 
 ---
 
@@ -241,16 +253,31 @@ tl show <id> [--json]              # full task detail
 tl history [<id>] [--json]         # event-by-event audit trail
 tl stale                           # claims whose lease has expired
 tl doctor [--json] [--fix] [--force] # scan ledger for integrity issues (optionally repair)
-tl agents [--compact] [--write-files [--dry-run] [--file path]] # print or install agent workflow guide
 
-#Exit Codes:
-`0` success · `1` generic · `2` invalid args · `3` task not found · `4` task not ready · `5` already claimed · `7` lock failed
+# Agents
+tl agents [--compact] [--write-files [--dry-run] [--file path]] # print or install agent workflow guide
 ```
+
+**Exit codes:** `0` success · `1` generic · `2` invalid args · `3` task not found · `4` task not ready · `5` already claimed · `7` lock failed
 
 - Walkthrough: [`docs/usage.md`](docs/usage.md) — tl by example, flow by flow
 - Behavioral spec: [`features/`](features) (one `.feature` file per command)
 - Per-command flags: `tl <cmd> --help`
 
+---
+
+## How tl cli compares
+
+`tl` shares a category with [Beads](https://github.com/steveyegge/beads) and
+[Backlog.md](https://github.com/MrLesk/Backlog.md): Git-native task trackers for
+humans **and** AI coding agents. The short version — `tl` is the files-only,
+no-database option, and its one differentiator is **agent-safe coordination
+with readable, Git-native state**: explicit claims, detectable stale work,
+computable dependencies, recorded handoffs, everything inspectable by hand.
+
+Feature-by-feature, including the honest "why `tl` and not Beads / Backlog.md /
+GitHub Issues":
+**[`docs/comparison.md`](docs/comparison.md)**.
 
 ---
 
@@ -276,7 +303,5 @@ workflow builds all platform archives and publishes the GitHub Release.
 ## Further reading
 
 - [`docs/usage.md`](docs/usage.md) — tl by example, flow by flow
-- [`docs/tech-docs.md`](docs/tech-docs.md) - some implementation detail
+- [`docs/tech-docs.md`](docs/tech-docs.md) — some implementation detail
 - [`docs/PRD.md`](docs/PRD.md) — design intent, non-goals, status enum
-
-
