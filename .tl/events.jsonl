@@ -394,3 +394,11 @@
 {"time":"2026-09-08T17:54:27Z","event":"reference_added","task_id":"task-npt","actor":"pi-actor","value":"features/update-actor.feature"}
 {"time":"2026-09-08T17:54:27Z","event":"note_added","task_id":"task-npt","actor":"pi-actor"}
 {"time":"2026-09-08T17:54:27Z","event":"closed","task_id":"task-npt","actor":"pi-actor"}
+{"time":"2026-09-08T18:36:23Z","event":"created","task_id":"task-q32","actor":"claude"}
+{"time":"2026-09-08T18:36:23Z","event":"reference_added","task_id":"task-q32","actor":"claude","value":".github/workflows/release.yaml"}
+{"time":"2026-09-08T18:36:23Z","event":"reference_added","task_id":"task-q32","actor":"claude","value":"packaging/aur/PKGBUILD"}
+{"time":"2026-09-08T18:36:23Z","event":"reference_added","task_id":"task-q32","actor":"claude","value":"README.md"}
+{"time":"2026-09-08T18:36:23Z","event":"reference_added","task_id":"task-q32","actor":"claude","value":"task-o9g"}
+{"time":"2026-09-08T18:36:23Z","event":"reference_added","task_id":"task-q32","actor":"claude","value":"task-8xx"}
+{"time":"2026-09-08T18:36:23Z","event":"claimed","task_id":"task-q32","actor":"claude"}
+{"time":"2026-09-08T18:42:53Z","event":"note_added","task_id":"task-q32","actor":"claude"}

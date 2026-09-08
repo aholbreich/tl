@@ -179,3 +179,52 @@ jobs:
             git commit -m "tl ${{ github.ref_name }}"
             git push
           fi
+
+  update-pacman-repo:
+    needs: release
+    runs-on: ubuntu-latest
+    # Arch tooling (makepkg, repo-add, updpkgsums) only exists on Arch.
+    container: archlinux:base-devel
+    # Set repository variable UPDATE_PACMAN_REPO=true and secret
+    # PACMAN_REPO_TOKEN to enable automatic pacman repository updates.
+    if: ${{ vars.UPDATE_PACMAN_REPO == 'true' }}
+    steps:
+      # Must precede any JavaScript action: the Arch image ships no Node, and
+      # actions/checkout cannot run without it.
+      - name: Install toolchain
+        run: pacman -Syu --noconfirm --needed git nodejs pacman-contrib
+
+      - name: Checkout tl
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Checkout pacman repo
+        uses: actions/checkout@v6
+        with:
+          repository: aholbreich/pacman-repo
+          token: ${{ secrets.PACMAN_REPO_TOKEN }}
+          path: pacman-repo
+
+      - name: Build tl-bin package
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          # makepkg refuses to run as root, and the container runs as root.
+          useradd --create-home builder
+          chown -R builder:builder "${GITHUB_WORKSPACE}"
+          su builder -c "cd '${GITHUB_WORKSPACE}' && VERSION='${VERSION}' .github/scripts/build-pacman-pkg.sh"
+
+      - name: Publish package
+        run: |
+          REPO_DIR=pacman-repo .github/scripts/update-pacman-repo.sh
+          cd pacman-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "pacman repository is already current"
+          else
+            git commit -m "tl ${{ github.ref_name }}"
+            git push
+          fi

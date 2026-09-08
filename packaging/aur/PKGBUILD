@@ -3,7 +3,7 @@
 # Binary (-bin) package: downloads prebuilt Go binaries from GitHub releases.
 
 pkgname=tl-bin
-pkgver=0.9.0
+pkgver=0.12.0
 pkgrel=1
 pkgdesc='Git-native task ledger that lets humans and AI coding agents coordinate work in one repo'
 arch=('x86_64' 'aarch64')
@@ -19,18 +19,14 @@ source_x86_64=(
   "tl-${pkgver}-x86_64.tar.gz::https://github.com/aholbreich/tl/releases/download/${pkgver}/tl-linux-amd64.tar.gz"
   "LICENSE::https://raw.githubusercontent.com/aholbreich/tl/${pkgver}/LICENSE"
 )
-sha256sums_x86_64=(
-  '261ec5a4003fb892469b69966e0ce295c8af3a6f7d3b934c8f4f687d0484d5af'
-  '4636c186f0d359cc0dd2d46155b6fb9df70d9b30489b9a6fb9e9d48c6a7f570a'
-)
+sha256sums_x86_64=('ce479b1e6979639bda10cf1e4a2956db4dc87089c22ab4b9414bd3e007d15a1a'
+                   '4636c186f0d359cc0dd2d46155b6fb9df70d9b30489b9a6fb9e9d48c6a7f570a')
+sha256sums_aarch64=('2cb1e33431c81a91b838b0ae223208371a82ba916385336d6a5d651f56883edd'
+                    '4636c186f0d359cc0dd2d46155b6fb9df70d9b30489b9a6fb9e9d48c6a7f570a')
 
 source_aarch64=(
   "tl-${pkgver}-aarch64.tar.gz::https://github.com/aholbreich/tl/releases/download/${pkgver}/tl-linux-arm64.tar.gz"
   "LICENSE::https://raw.githubusercontent.com/aholbreich/tl/${pkgver}/LICENSE"
-)
-sha256sums_aarch64=(
-  'fe28c71b261d71c0ba6fa5b1564aeabfcc740a635fd169fc38f2b48657b1a94e'
-  '4636c186f0d359cc0dd2d46155b6fb9df70d9b30489b9a6fb9e9d48c6a7f570a'
 )
 
 package() {

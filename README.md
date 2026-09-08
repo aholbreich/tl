@@ -116,7 +116,7 @@ Latest releases are published to the
 [GitHub Releases page](https://github.com/aholbreich/tl/releases/latest) as
 prebuilt archives for **Linux** and **macOS** (amd64 + arm64) and **Windows**
 (amd64 + arm64). Every release triggers an automatic update of the Homebrew
-tap and the RPM repository.
+tap, the RPM repository and the pacman repository.
 
 ### Homebrew (macOS / Linux)
 
@@ -132,34 +132,53 @@ brew tap aholbreich/tap
 brew install tl
 ```
 
-### Arch Linux / Omarchy (AUR — coming soon)
+### Arch Linux / Omarchy
 
-> **Coming soon:** the `tl-bin` package is prepared, but publication is waiting
-> for AUR account registration. The commands below will work after the package
-> is published.
-
-On Omarchy, use its AUR package helper:
+Add the Holbreich pacman repository, which is updated automatically on every
+release:
 
 ```sh
-omarchy pkg aur add tl-bin
+echo '
+[holbreich]
+SigLevel = Optional TrustAll
+Server = https://aholbreich.github.io/pacman-repo/$arch' | sudo tee -a /etc/pacman.conf
+sudo pacman -Sy
+sudo pacman -S tl-bin
 ```
 
-On other Arch-based systems, use an AUR helper such as `yay`:
+On Omarchy:
 
 ```sh
-yay -S tl-bin
+omarchy pkg add tl-bin
 ```
 
-Or build and install directly from the AUR:
+`tl-bin` installs `/usr/bin/tl`, so the command stays `tl`. It is named `-bin`
+because it packages the prebuilt release binary rather than compiling from
+source. Thereafter `pacman -Syu` — or `omarchy update` — keeps it current
+like any other package.
+
+`SigLevel = Optional TrustAll` is required because these packages are not GPG
+signed. Pacman will still verify the checksums in the repository database and
+fetch over HTTPS, but it cannot verify who built a package. Add the
+repository only if you are willing to trust its owner.
+
+<details>
+<summary>Without adding a repository</summary>
+
+The PKGBUILD is in this repository, so it can be built directly. This needs
+no third-party repository and no AUR account, but nothing will upgrade the
+result — pacman has no source to compare it against.
 
 ```sh
-git clone https://aur.archlinux.org/tl-bin.git
-cd tl-bin
+curl -O https://raw.githubusercontent.com/aholbreich/tl/main/packaging/aur/PKGBUILD
 makepkg -si
 ```
+</details>
 
-The AUR package is named `tl-bin` because it packages the prebuilt GitHub
-release binary. It installs `/usr/bin/tl`, so the command stays `tl`.
+> **AUR:** `tl-bin` is prepared for the AUR but not yet published — account
+> registration is unresolved. The pacman repository above is the supported
+> path in the meantime. See
+> [pacman-repo](https://github.com/aholbreich/pacman-repo).
 
 ### Install script (macOS / Linux)
 
