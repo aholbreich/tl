@@ -1,16 +1,15 @@
 ---
 id: task-ahk
-title: Report the tags on a resolved spec, as data
+title: Report feature-level spec tags under --spec-status
 status: open
 priority: medium
 type: task
 created_at: 2026-09-08T11:53:17Z
-updated_at: 2026-09-08T13:15:09Z
+updated_at: 2026-09-08T13:34:27Z
 created_by: claude
 assignee: null
 depends_on:
   - task-kd0
-  - task-1re
   - task-hwb
 claim:
   actor: null
@@ -22,11 +21,54 @@ references:
   - docs/gherkin-guidelines.md
   - features/references.feature
   - task-kd0
-  - task-1re
-  - task-thh
+  - .decisions/0002-reading-referenced-files.md
 ---
 
 ## Description
+
+## Problem
+
+A reader asking "what is specified, and what does the author say about it?" currently has to assemble the answer from two sources: tl for ticket status, and the repository for what the spec claims about itself.
+
+Once a spec reference is recognised (task-kd0), the tags on that feature are already there — in version control, reviewable in a diff, written next to the thing they describe. tl does not read them, so nobody can query them.
+
+## Proposed solution
+
+Under `tl list --spec-status`, report the feature-level tags of each referenced spec file alongside its existence.
+
+```
+tl list --spec-status
+
+ID        Status  Spec                       Tags
+task-ps0  done    features/list.feature      @implemented
+task-7fi  open    features/tree.feature      (missing)
+task-cys  open    features/agents.feature    @implemented
+task-wke  open    -                          -
+```
+
+The vocabulary is the project's, not tl's. tl reports the tags it finds; it does not define what `@implemented` means, does not require it, and does not validate it against a list. A project using `@wip`, `@draft` or `@manual` gets those reported instead, with no code change.
+
+## What a tag is and is not evidence of
+
+A tag is a **claim the author made deliberately**, in version control. That is the same contract as every other field in the ledger, and it is worth surfacing.
+
+It is not evidence that the scenarios pass. Only a test runner knows that, and teaching tl to run suites is squarely a non-goal — "AI agent execution itself", "long-running background workers", and by extension any build tooling. Ingesting a test report is a much larger commitment and must not be smuggled in through this ticket.
+
+Nor is it evidence about *this story*. At file granularity a tag describes the whole feature file, which usually serves several stories; a story sharing a mature file with delivered work will show that file's tags while being unbuilt. That ceiling is decision 0002's accepted trade — see task-kd0.
+
+## Design constraints
+
+- **Feature-level tags only.** The lines immediately preceding `Feature:`. Not scenario-level: at file granularity there is no way to know which scenario belongs to this story, so reporting scenario tags would imply a precision tl does not have.
+- **Same read as task-kd0.** Existence and tags come from one open of the file. Do not add a second pass.
+- **Parse only the header.** Read as far as the `Feature:` line and stop. No full Gherkin parser, no new dependency.
+- **Never on the default path.** Plain `tl list` must not become one file read per row.
+- **Degrade quietly.** Missing, unreadable or tagless reports "unknown" or an empty list, never an error. `tl doctor` owns complaining about dead references; a listing must not fail because someone deleted a feature file.
+- **Report, do not interpret.** No hardcoded meaning for any tag string, `@implemented` included.
+- **Tags are a list.** A feature may carry several. Do not collapse to one.
+
+## On the task-hwb prerequisite
+
+task-hwb documents tl's own `@implemented` convention. It is worth doing, but it is not a technical prerequisite: since tl assigns no meaning to any tag, nothing here depends on that convention being written down. Keep the dependency for dogfood tidiness, or drop it if it blocks progress.
 
 ## Problem
 
@@ -116,4 +158,5 @@ A tag is a claim the author makes deliberately, in version control, reviewable i
 ## Prerequisite
 
 The `@implemented` convention is currently undocumented — see the guidelines ticket. It should be written down before tl builds behaviour on top of it.
+
 

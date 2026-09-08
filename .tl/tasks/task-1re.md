@@ -1,11 +1,11 @@
 ---
 id: task-1re
 title: Should tl read referenced spec files at display time?
-status: pending_human
+status: done
 priority: medium
 type: decision
 created_at: 2026-09-08T11:52:57Z
-updated_at: 2026-09-08T13:15:50Z
+updated_at: 2026-09-08T13:34:55Z
 created_by: claude
 assignee: null
 depends_on: []
@@ -14,10 +14,6 @@ claim:
   claimed_at: null
   expires_at: null
   heartbeat_at: null
-pending:
-  question: 'Decision 0002 is drafted at .decisions/0002-reading-referenced-files.md, proposing that read commands MAY open referenced files under four limits: the reference is the trigger (no project-level Gherkin detection); existence is a cheap stat but content parsing happens only for anchored refs or behind a flag; enrichment is automatic in human output but schema-stable in JSON; and tl reports structure only, never deciding what a tag means. Accept as drafted, or fall back to alternative 2 (doctor only)? Three open questions inside need your call too: whether a missing referenced file reads as ''no spec'' or ''broken link'', what tl tree renders for an unresolved spec, and which resolver is second.'
-  requester: claude
-  requested_at: 2026-09-08T13:15:50Z
 tags: []
 references:
   - docs/PRD.md
@@ -61,3 +57,7 @@ PRD thesis point 7 is "Small and predictable — no daemon, no hidden database, 
 Option 3, with option 2 as the fallback if that still feels too invasive. It preserves the default-path guarantee — plain `tl list` reads nothing but the ledger — while making the joined view a single command rather than a scripting exercise. Option 4 should be rejected: it makes every listing pay for a feature most projects will not use.
 
 Whatever is chosen, record it in `.decisions/` alongside 0001, since it sets a precedent for how far tl reaches outside its own directory.
+
+## Notes
+
+- 2026-09-08T13:34:55Z [human] resolved: Alternative 3, narrowed. Read commands may open referenced files ONLY behind an explicit flag (tl list --spec-status); the default path reads nothing outside .tl/. Linking stays at FILE granularity. Scenario anchors in references were rejected: an exact match on a human-written title breaks silently on rename, and the new syntax would be destroyed by tl doctor --fix. Ledger IDs tagged on scenarios were rejected: the specification is the durable artefact and the ledger is working state, so embedded ticket IDs outlive their meaning. Accepted ceiling: tl reports that a story points at a spec file which exists and carries certain tags, never that this story's behaviour is specified. JSON keeps a schema-stable 'spec' key, always present, null when the flag was not passed. Recorded as decision 0002.

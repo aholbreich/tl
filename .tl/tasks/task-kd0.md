@@ -1,17 +1,15 @@
 ---
 id: task-kd0
-title: Resolve spec references to a scenario, not just a file
+title: Recognize .feature references as specs, and surface them under --spec-status
 status: open
 priority: medium
 type: task
 created_at: 2026-09-08T11:52:38Z
-updated_at: 2026-09-08T13:14:48Z
+updated_at: 2026-09-08T13:34:08Z
 created_by: claude
 assignee: null
 depends_on:
   - task-ps0
-  - task-thh
-  - task-1re
 claim:
   actor: null
   claimed_at: null
@@ -24,11 +22,58 @@ references:
   - docs/gherkin-guidelines.md
   - cmd/show.go
   - task-ps0
-  - task-thh
   - .decisions/0001-multi-agent-coordination-via-tags.md
+  - .decisions/0002-reading-referenced-files.md
 ---
 
 ## Description
+
+## Problem
+
+tl already has everything needed to connect a task to the specification that defines it, but nothing joins them up.
+
+Already true today:
+- References are generic strings and explicitly support this. `features/references.feature` uses `--ref features/login.feature` in its mixed-kinds scenario.
+- `tl doctor` already validates path-shaped references and flags dead ones (checkReferences, internal/doctor/doctor.go:396), skipping URLs and bare ticket IDs.
+
+What is missing is that tl never treats such a reference as anything but an opaque string. A reader cannot ask "which stories have a spec?" or "which spec links are dead?".
+
+## Proposed solution — convention, not syntax
+
+A reference whose path ends in `.feature` is a spec reference. That is the whole rule.
+
+- No new flag on `tl create` or `tl refine`. `--ref features/login.feature` already works and already means this.
+- No new frontmatter field, no migration. Existing ledgers gain the behaviour the moment they use the convention.
+- No project-level detection: no `features/` directory assumed, no build-tool sniffing, no mode. The reference is the trigger, so a project that writes no Gherkin has no matching references and sees no change anywhere. A monorepo with specs in six places works without configuration.
+
+Surface it in three places:
+
+1. **`tl show`** groups the References block so a spec is visually distinct from code paths, URLs and ticket IDs. String-only; no file access.
+2. **`tl list --spec-status`** adds a spec column: the referenced file, whether it exists, and what the header says about it. This is the only path that opens a file, per decision 0002.
+3. **`--json`** exposes a `spec` key, always present and null when the flag was not passed, so a consumer's schema never depends on which flags were used.
+
+## Granularity — the accepted ceiling
+
+A feature file describes a capability; a story is usually a slice of one. So this reports "this story points at a spec file that exists and says X", not "this story's behaviour is specified". A story sharing a mature feature file with delivered work will show that file's tags while being unbuilt.
+
+That is decision 0002's accepted trade, not an oversight. The two ways past it — scenario anchors in the reference, and ledger identifiers tagged on scenarios — were both considered and rejected there. Do not reintroduce either in this ticket.
+
+## Design constraints
+
+- **Optional and additive.** Inert unless a project adopts the convention. Nothing rejected, nothing required, no existing output changes shape.
+- **Derived, never stored.** Spec-ness is computed from the reference string. It must never become a frontmatter field that can disagree with the reference list.
+- **Never on the default path.** Plain `tl list` must not become one file read per row. Only `--spec-status` reads.
+- **Not Gherkin-specific in the plumbing.** The suffix set should be one small list so another spec format can be accommodated later without redesign. Start with `.feature` only, and name the concept reference resolution rather than anything Gherkin-shaped.
+- **Degrade quietly.** A missing, unreadable or malformed file yields "unknown", never an error that breaks a listing. `tl doctor` owns complaining about dead references.
+- **More than one spec reference is legal.** Uncommon, but a story may point at two files. Do not assume a single value; do not design the display around the plural case either.
+
+## Prerequisite
+
+Decision 0002 — accepted. This ticket implements it.
+
+## Use case context
+
+Reported from rssb, which follows a BDD-first workflow: every feature starts as a `.feature` file before implementation exists. Tickets and specs are close to one-to-one there, which is the case where file granularity is most informative.
 
 ## Problem
 
@@ -142,4 +187,5 @@ Whether tl should also *read* the referenced file to report its contents is a se
 ## Use case context
 
 Reported from rssb, which follows a BDD-first workflow: every feature starts as a `.feature` file before implementation exists. Tickets and specs are one-to-one there, but the ledger cannot express or query that relationship.
+
 

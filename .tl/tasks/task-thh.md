@@ -1,11 +1,11 @@
 ---
 id: task-thh
 title: Split scenario anchors before validating references in doctor
-status: open
+status: cancelled
 priority: high
 type: task
 created_at: 2026-09-08T13:14:17Z
-updated_at: 2026-09-08T13:14:17Z
+updated_at: 2026-09-08T13:34:37Z
 created_by: claude
 assignee: null
 depends_on: []
@@ -54,3 +54,7 @@ Split a path-shaped reference at the first `#` before validating, and stat only 
 ## Why this is first
 
 It is small, needs no decision, and is the one item on this path that can cause data loss. Landing it early means the anchor convention can be adopted incrementally afterwards without a flag day.
+
+## Notes
+
+- 2026-09-08T13:34:37Z [claude] cancelled: Decision 0002 rejected scenario anchors in references (alternative 5), so no reference will contain a '#' and doctor has no anchor to mis-parse. The underlying hazard is real but latent: checkReferences treats anything containing '/' as a path, so a hand-written 'features/x.feature#Name' is still reported dead and 'tl doctor --fix' would delete it. Revive this ticket only if anchors are ever adopted as a second resolver.
