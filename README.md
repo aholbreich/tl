@@ -251,6 +251,7 @@ tl release <id>                    # step away cleanly (leave a note first)
 tl list [--all --status s --tag t --mine] [--type t --priority p] [--json]
 tl list --dashboard [--tag t] > tasks.md  # regeneratable Markdown overview
 tl list --spec-status              # add a column for referenced .feature specs
+tl tree [<id>] [--all] [--json]     # dependency graph as a forest
 tl show <id> [--json]              # full task detail
 tl history [<id>] [--json]         # event-by-event audit trail
 tl stale                           # claims whose lease has expired
@@ -289,6 +290,41 @@ tl list --dashboard --tag docs > docs-tasks.md
 
 There is no dedicated area or due-date field; use tags to scope areas of work.
 Watch mode and dependency-tree rendering are not part of the dashboard.
+
+### Dependency tree
+
+`tl tree` renders the graph the ledger already stores. A task's children are
+the tasks it **depends on**, so a parent sits above the slices it waits for,
+and a root is a task nothing else depends on.
+
+```
+$ tl tree
+task-tvp        Test AUR build and installation end-to-end       open
+└─ task-o9g     Publish tl-bin initial import to AUR             open
+   └─ task-8xx  Register AUR account and set up SSH access       in_progress
+task-ahk        Report feature-level spec tags                   open
+└─ task-hwb     Document the @implemented tag convention         open
+```
+
+With a task id, only that subtree is drawn. Closed tasks are hidden by
+default and revealed by `--all`, matching `tl list`; naming a task explicitly
+always renders it, whatever its status.
+
+A shared dependency is legitimate, so it is drawn under **every** parent that
+waits for it rather than being assigned to one. A dependency cycle is drawn
+once and marked `(cycle)` instead of recursing, so the command always
+terminates — diagnosing cycles is `tl doctor`'s job, not this one's. Nothing
+visible is ever dropped: a task no root reaches, which is what happens inside
+a cycle, is rendered as its own root.
+
+`--json` nests children so consumers do not re-derive the graph. Its nodes
+carry id, title, status and priority rather than whole tasks — a shared
+dependency appears at several positions, and repeating full bodies at each
+would bloat the document rather than help.
+
+```sh
+tl tree --json | jq -r '.. | objects | select(.children == []) | .id'   # leaves
+```
 
 ### Spec status
 
