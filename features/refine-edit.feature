@@ -27,11 +27,28 @@ Feature: Refine a task in an editor
     And "task-abc123" has the description "Validate email format and require a password."
     And an event "refined" is recorded for "task-abc123"
 
+  Scenario Outline: Editor changes record the selected actor
+    Given a task "task-auth" titled "Add login form"
+    And environment variable "TL_ACTOR" is "env-agent"
+    And the developer's editor will save:
+      """
+      title: Add login validation
+      priority: high
+      type: feature
+      """
+    When the developer runs `tl refine task-auth --edit <actor-flag>`
+    Then an event "refined" is recorded for "task-auth" by "<actor>"
+
+    Examples:
+      | actor-flag  | actor     |
+      | --actor aho | aho       |
+      |             | env-agent |
+
   Scenario: Refining in editor mode with no changes is a successful no-op
     Given a task "task-abc123" titled "Add login form"
     And "task-abc123" has a description "Build the first version."
     And the developer's editor saves the buffer unchanged
-    When the developer runs `tl refine task-abc123 --edit`
+    When the developer runs `tl refine task-abc123 --edit --actor aho`
     Then the command exits with code 0
     And "task-abc123" has title "Add login form"
     And "task-abc123" has the description "Build the first version."

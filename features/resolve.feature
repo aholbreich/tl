@@ -15,6 +15,14 @@ Feature: Resolve a pending task with an answer
     And "task-abc123" has a note containing "Use GitHub OAuth first."
     And an event "pending_resolved" is recorded for "task-abc123"
 
+  Scenario: An explicit actor receives credit for the answer instead of the environment actor
+    Given a task "task-auth" with status "pending_human"
+    And "task-auth" has the question "Which auth provider first?"
+    And environment variable "TL_ACTOR" is "env-agent"
+    When the developer runs `tl resolve task-auth --answer "Use GitHub OAuth first." --actor aho`
+    Then an event "pending_resolved" is recorded for "task-auth" by "aho"
+    And "task-auth" has a canonical "resolved" note from "aho" with message "Use GitHub OAuth first."
+
   Scenario: Resolving a task that is not pending_human is rejected
     Given a task "task-abc123" with status "open"
     When the developer runs `tl resolve task-abc123 --answer "moot"`

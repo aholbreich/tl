@@ -22,6 +22,7 @@ func newRefineCmd() *cobra.Command {
 		description string
 		taskType    string
 		priority    string
+		actor       string
 		addRefs     []string
 		removeRefs  []string
 		editMode    bool
@@ -47,11 +48,12 @@ func newRefineCmd() *cobra.Command {
 				return err
 			}
 
+			resolved := ResolveActor(actor)
 			if editMode {
 				if hasFieldFlag || hasRefFlag {
 					return NewExitError(2, "--edit cannot be combined with field flags")
 				}
-				return refineWithEditor(cmd, ledger, taskID, asJSON)
+				return refineWithEditor(cmd, ledger, taskID, resolved, asJSON)
 			}
 
 			if !hasFieldFlag && !hasRefFlag {
@@ -104,11 +106,12 @@ func newRefineCmd() *cobra.Command {
 				return err
 			}
 			if hasFieldFlag {
-				if err := events.Append(ledger, events.Event{Event: "refined", TaskID: t.ID}); err != nil {
+				if err := events.Append(ledger, events.Event{Event: "refined", TaskID: t.ID, Actor: resolved}); err != nil {
 					return err
 				}
 			}
 			for _, e := range refEvents {
+				e.Actor = resolved
 				if err := events.Append(ledger, e); err != nil {
 					return err
 				}
@@ -123,11 +126,12 @@ func newRefineCmd() *cobra.Command {
 	c.Flags().StringArrayVar(&addRefs, "add-ref", nil, "Add a reference (repeatable; idempotent)")
 	c.Flags().StringArrayVar(&removeRefs, "remove-ref", nil, "Remove a reference (repeatable; idempotent)")
 	c.Flags().BoolVar(&editMode, "edit", false, "Open $VISUAL or $EDITOR to edit task fields")
+	c.Flags().StringVar(&actor, "actor", "", "Actor refining the task (resolved from env or auto-detected if unset)")
 	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output")
 	return c
 }
 
-func refineWithEditor(cmd *cobra.Command, ledger, taskID string, asJSON bool) error {
+func refineWithEditor(cmd *cobra.Command, ledger, taskID, actor string, asJSON bool) error {
 	t, err := store.Read(ledger, taskID)
 	if errors.Is(err, store.ErrTaskNotFound) {
 		return NewExitError(3, "task %s not found", taskID)
@@ -183,10 +187,10 @@ func refineWithEditor(cmd *cobra.Command, ledger, taskID string, asJSON bool) er
 	t.Priority = update.priority
 	t.Type = update.taskType
 	t.Body = update.body
-	return writeRefinedTask(cmd, ledger, t, asJSON)
+	return writeRefinedTask(cmd, ledger, t, actor, asJSON)
 }
 
-func writeRefinedTask(cmd *cobra.Command, ledger string, t *task.Task, asJSON bool) error {
+func writeRefinedTask(cmd *cobra.Command, ledger string, t *task.Task, actor string, asJSON bool) error {
 	t.UpdatedAt = time.Now().UTC().Truncate(time.Second)
 	if err := store.Write(ledger, t); err != nil {
 		return err
@@ -194,6 +198,7 @@ func writeRefinedTask(cmd *cobra.Command, ledger string, t *task.Task, asJSON bo
 	if err := events.Append(ledger, events.Event{
 		Event:  "refined",
 		TaskID: t.ID,
+		Actor:  actor,
 	}); err != nil {
 		return err
 	}

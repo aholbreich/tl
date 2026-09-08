@@ -13,6 +13,12 @@ Feature: Refine a task
     Then "task-abc123" has title "Add login form validation"
     And an event "refined" is recorded for "task-abc123"
 
+  Scenario: Refinement records the explicit actor instead of the environment actor
+    Given a task "task-auth" titled "Add login form"
+    And environment variable "TL_ACTOR" is "env-agent"
+    When the developer runs `tl refine task-auth --title "Add login validation" --actor aho`
+    Then an event "refined" is recorded for "task-auth" by "aho"
+
   Scenario: Refining the description replaces the stored description
     Given a task "task-abc123" exists
     When the developer runs `tl refine task-abc123 --description "Validate email format and require a password."`

@@ -15,6 +15,7 @@ import (
 func newResolveCmd() *cobra.Command {
 	var (
 		answer string
+		actor  string
 		asJSON bool
 	)
 	c := &cobra.Command{
@@ -45,7 +46,7 @@ func newResolveCmd() *cobra.Command {
 			t.UpdatedAt = now
 			t.Pending = nil
 
-			resolved := ResolveActor("")
+			resolved := ResolveActor(actor)
 			t.Body = task.AppendNote(t.Body, now, resolved, "resolved", answer)
 
 			if err := store.Write(ledger, t); err != nil {
@@ -69,6 +70,7 @@ func newResolveCmd() *cobra.Command {
 		},
 	}
 	c.Flags().StringVarP(&answer, "answer", "a", "", "Answer to the pending question (required)")
+	c.Flags().StringVar(&actor, "actor", "", "Actor answering the question (resolved from env or auto-detected if unset)")
 	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output")
 	return c
 }

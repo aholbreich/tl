@@ -8,6 +8,7 @@ import (
 	"github.com/cucumber/godog"
 
 	"github.com/aholbreich/tl/cmd"
+	"github.com/aholbreich/tl/internal/events"
 )
 
 // --- actor.feature support ------------------------------------------------
@@ -16,6 +17,31 @@ func initializeActorSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^environment variable "([^"]*)" is "([^"]*)"$`, w.setEnv)
 	ctx.Step(`^the detected agent is "([^"]*)"$`, w.setDetectedAgent)
 	ctx.Step(`^the claim expiry for "([^"]*)" is extended$`, w.claimExpiryIsExtended)
+	ctx.Step(`^an event "([^"]*)" is recorded for "([^"]*)" by "([^"]*)"$`, w.eventRecordedForBy)
+}
+
+func (w *world) eventRecordedForBy(eventName, taskID, actor string) error {
+	if w.cmdErr != nil {
+		return w.cmdErr
+	}
+	journal, err := events.ReadAll(".tl")
+	if err != nil {
+		return err
+	}
+	found := false
+	for _, event := range journal {
+		if event.Event != eventName || event.TaskID != taskID {
+			continue
+		}
+		found = true
+		if event.Actor != actor {
+			return fmt.Errorf("%s event for %s has actor %q, want %q", eventName, taskID, event.Actor, actor)
+		}
+	}
+	if !found {
+		return fmt.Errorf("no %s event for %s", eventName, taskID)
+	}
+	return nil
 }
 
 func (w *world) setEnv(key, value string) error {
