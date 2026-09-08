@@ -28,7 +28,7 @@ func initializeListSteps(ctx *godog.ScenarioContext, w *world) {
 
 func (w *world) followingTasksExist(table *godog.Table) error {
 	allowedColumns := map[string]bool{
-		"id": true, "status": true, "priority": true, "claimed by": true, "title": true, "tags": true, "created at": true,
+		"id": true, "status": true, "priority": true, "claimed by": true, "title": true, "tags": true, "created at": true, "type": true,
 	}
 	for _, header := range table.Rows[0].Cells {
 		if !allowedColumns[header.Value] {
@@ -72,6 +72,7 @@ func (w *world) followingTasksExist(table *godog.Table) error {
 			Title:     title,
 			Status:    status,
 			Priority:  priority,
+			Type:      values["type"],
 			CreatedAt: createdAt,
 			UpdatedAt: fixtureTime,
 			CreatedBy: "human",

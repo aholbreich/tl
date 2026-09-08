@@ -109,6 +109,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	initializeCreateSteps(ctx, w)
 	initializeBulkJSONSteps(ctx, w)
 	initializeListSteps(ctx, w)
+	initializeDashboardSteps(ctx, w)
 	initializeShowSteps(ctx, w)
 	initializeLedgerRequiredSteps(ctx, w)
 	initializeClaimSteps(ctx, w)

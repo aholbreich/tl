@@ -21,10 +21,20 @@ func newListCmd() *cobra.Command {
 	var status string
 	var mine bool
 	var tag string
+	var dashboard bool
+	var taskType string
+	var priority string
 	c := &cobra.Command{
 		Use:   "list",
 		Short: "List tasks in the ledger",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if cmd.Flags().Changed("priority") {
+				var err error
+				priority, err = normalizePriority(priority)
+				if err != nil {
+					return err
+				}
+			}
 			ledger, err := requireLedger()
 			if err != nil {
 				return err
@@ -33,13 +43,18 @@ func newListCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			tasks = filterListTasks(tasks, includeAll, claimedBy, status, mine, tag)
+			tasks = filterListTasks(tasks, includeAll, claimedBy, status, mine, tag, taskType, priority)
 			sortTasks(tasks)
 
 			if asJSON {
 				enc := json.NewEncoder(cmd.OutOrStdout())
 				enc.SetIndent("", "  ")
 				return enc.Encode(compactTasksJSON(tasks))
+			}
+
+			if dashboard {
+				_, err := fmt.Fprint(cmd.OutOrStdout(), renderDashboard(tasks))
+				return err
 			}
 
 			var rendered bytes.Buffer
@@ -59,7 +74,10 @@ func newListCmd() *cobra.Command {
 			return err
 		},
 	}
-	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output")
+	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output (takes precedence over --dashboard)")
+	c.Flags().BoolVar(&dashboard, "dashboard", false, "Emit a status-grouped Markdown dashboard")
+	c.Flags().StringVarP(&taskType, "type", "t", "", "Only show tasks of this type")
+	c.Flags().StringVarP(&priority, "priority", "p", "", "Only show tasks with this priority (l/low|m/medium|h/high)")
 	c.Flags().BoolVarP(&includeAll, "all", "a", false, "Include closed tasks (done and cancelled)")
 	c.Flags().StringVar(&claimedBy, "claimed-by", "", "Only show tasks claimed by this actor")
 	c.Flags().StringVar(&status, "status", "", "Only show tasks with this status (overrides default closed hiding)")
@@ -68,7 +86,7 @@ func newListCmd() *cobra.Command {
 	return c
 }
 
-func filterListTasks(tasks []*task.Task, includeAll bool, claimedBy string, status string, mine bool, tag string) []*task.Task {
+func filterListTasks(tasks []*task.Task, includeAll bool, claimedBy string, status string, mine bool, tag, taskType, priority string) []*task.Task {
 	if mine {
 		resolved := ResolveActor("")
 		claimedBy = resolved
@@ -89,6 +107,12 @@ func filterListTasks(tasks []*task.Task, includeAll bool, claimedBy string, stat
 			continue
 		}
 		if tag != "" && !taskHasTag(t, tag) {
+			continue
+		}
+		if taskType != "" && effectiveTaskType(t) != taskType {
+			continue
+		}
+		if priority != "" && t.Priority != priority {
 			continue
 		}
 		filtered = append(filtered, t)
@@ -207,9 +231,15 @@ func sortTasks(tasks []*task.Task) {
 		if sa, sb := statusRank(a.Status), statusRank(b.Status); sa != sb {
 			return sa < sb
 		}
+		if a.Status != b.Status {
+			return a.Status < b.Status
+		}
 		if pa, pb := prioritySortRank(a.Priority), prioritySortRank(b.Priority); pa != pb {
 			return pa < pb
 		}
-		return a.CreatedAt.Before(b.CreatedAt)
+		if !a.CreatedAt.Equal(b.CreatedAt) {
+			return a.CreatedAt.Before(b.CreatedAt)
+		}
+		return a.ID < b.ID
 	})
 }
