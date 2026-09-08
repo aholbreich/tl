@@ -3,6 +3,7 @@ package cmd
 import (
 	"time"
 
+	"github.com/aholbreich/tl/internal/spec"
 	"github.com/aholbreich/tl/internal/task"
 )
 
@@ -18,6 +19,7 @@ type compactTaskJSON struct {
 	Assignee    *string           `json:"assignee"`
 	DependsOn   []string          `json:"depends_on"`
 	References  []string          `json:"references"`
+	Spec        []spec.Spec       `json:"spec"`
 	Claim       task.Claim        `json:"claim"`
 	Pending     *task.Pending     `json:"pending,omitempty"`
 	Tags        []string          `json:"tags"`
@@ -26,7 +28,10 @@ type compactTaskJSON struct {
 	Sections    map[string]string `json:"sections,omitempty"`
 }
 
-func compactTasksJSON(tasks []*task.Task) []compactTaskJSON {
+// compactTasksJSON renders tasks for bulk output. specs is nil unless
+// --spec-status was passed; a nil entry marshals to null, an empty non-nil
+// slice to [], which is how the schema stays stable across both.
+func compactTasksJSON(tasks []*task.Task, specs map[string][]spec.Spec) []compactTaskJSON {
 	out := make([]compactTaskJSON, 0, len(tasks))
 	for _, t := range tasks {
 		parsed := task.ParseBody(t.Body)
@@ -42,6 +47,7 @@ func compactTasksJSON(tasks []*task.Task) []compactTaskJSON {
 			Assignee:    t.Assignee,
 			DependsOn:   t.DependsOn,
 			References:  compactReferences(t.References),
+			Spec:        specs[t.ID],
 			Claim:       t.Claim,
 			Pending:     t.Pending,
 			Tags:        t.Tags,

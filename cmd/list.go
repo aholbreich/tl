@@ -24,6 +24,7 @@ func newListCmd() *cobra.Command {
 	var dashboard bool
 	var taskType string
 	var priority string
+	var specStatus bool
 	c := &cobra.Command{
 		Use:   "list",
 		Short: "List tasks in the ledger",
@@ -46,10 +47,12 @@ func newListCmd() *cobra.Command {
 			tasks = filterListTasks(tasks, includeAll, claimedBy, status, mine, tag, taskType, priority)
 			sortTasks(tasks)
 
+			specs := resolveSpecsFor(ledger, tasks, specStatus)
+
 			if asJSON {
 				enc := json.NewEncoder(cmd.OutOrStdout())
 				enc.SetIndent("", "  ")
-				return enc.Encode(compactTasksJSON(tasks))
+				return enc.Encode(compactTasksJSON(tasks, specs))
 			}
 
 			if dashboard {
@@ -59,9 +62,17 @@ func newListCmd() *cobra.Command {
 
 			var rendered bytes.Buffer
 			tw := tabwriter.NewWriter(&rendered, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(tw, "ID\tStatus\tPriority\tClaimed By\tTitle")
+			header := "ID\tStatus\tPriority\tClaimed By\tTitle"
+			if specStatus {
+				header += "\tSpec"
+			}
+			fmt.Fprintln(tw, header)
 			for _, t := range tasks {
-				fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n", t.ID, t.Status, t.Priority, listClaimActor(t), t.Title)
+				fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s", t.ID, t.Status, t.Priority, listClaimActor(t), t.Title)
+				if specStatus {
+					fmt.Fprintf(tw, "\t%s", specCell(specs[t.ID]))
+				}
+				fmt.Fprintln(tw)
 			}
 			if err := tw.Flush(); err != nil {
 				return err
@@ -76,6 +87,7 @@ func newListCmd() *cobra.Command {
 	}
 	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output (takes precedence over --dashboard)")
 	c.Flags().BoolVar(&dashboard, "dashboard", false, "Emit a status-grouped Markdown dashboard")
+	c.Flags().BoolVar(&specStatus, "spec-status", false, specStatusFlagUsage)
 	c.Flags().StringVarP(&taskType, "type", "t", "", "Only show tasks of this type")
 	c.Flags().StringVarP(&priority, "priority", "p", "", "Only show tasks with this priority (l/low|m/medium|h/high)")
 	c.Flags().BoolVarP(&includeAll, "all", "a", false, "Include closed tasks (done and cancelled)")

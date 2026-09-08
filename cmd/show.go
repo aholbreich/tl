@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/aholbreich/tl/internal/spec"
 	"github.com/aholbreich/tl/internal/store"
 	"github.com/aholbreich/tl/internal/task"
 )
@@ -65,7 +66,13 @@ func printTaskDetail(out interface{ Write([]byte) (int, error) }, t *task.Task, 
 	} else {
 		fmt.Fprintf(out, "%s:\n", colorFieldLabel(useColor, "References"))
 		for _, ref := range t.References {
-			fmt.Fprintf(out, "  - %s\n", colorFieldValue(useColor, ref))
+			// Marking a spec is a string rule on the reference itself, so
+			// show still reads nothing outside .tl/ (decision 0002).
+			label := ref
+			if spec.IsRef(ref) {
+				label += " (spec)"
+			}
+			fmt.Fprintf(out, "  - %s\n", colorFieldValue(useColor, label))
 		}
 	}
 
