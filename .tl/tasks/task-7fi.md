@@ -1,11 +1,11 @@
 ---
 id: task-7fi
 title: Add tl tree to render the dependency graph
-status: open
+status: done
 priority: medium
 type: task
 created_at: 2026-09-08T11:52:16Z
-updated_at: 2026-09-08T11:52:16Z
+updated_at: 2026-09-08T13:52:31Z
 created_by: claude
 assignee: null
 depends_on: []
@@ -63,3 +63,7 @@ task-ylk (`tl list --dashboard`) is a flat Markdown overview grouped by status o
 ## Use case context
 
 Reported from rssb, where one feature ticket was split into three vertical slices with a dependency chain. The shape of that decomposition — and which slice is blocking — is currently only visible by reading four tasks one at a time.
+
+## Notes
+
+- 2026-09-08T13:52:31Z [claude] note: Implemented. New internal/tree package builds the forest; cmd/tree.go renders it. Children are a task's DependsOn, so a parent sits above the slices it waits for, and a root is a task nothing else depends on. Roots are computed over the VISIBLE set, not all tasks, so an open task whose only parent is closed surfaces as a root instead of vanishing with it. Added an invariant the ticket did not ask for but needs: any visible task no root reaches is appended as its own root, so a pure cycle (which has no roots at all) still renders rather than producing empty output. Cycles are detected against the ancestor path, not a global visited set, which is what keeps a legitimate shared dependency rendered under every parent while a loop is drawn once and marked (cycle). Verified by hand: a two-task cycle terminates with exit 0 under both 'tl tree' and 'tl tree <id>'. Rendering flushes the tabwriter before applying color, matching cmd/list.go, because ANSI escapes fed into tabwriter break every column width. JSON nodes are lean (id, title, status, priority, children) rather than full tasks: a shared dependency appears at several positions and repeating whole bodies would bloat the document. Tests: features/tree.feature, 12 scenarios, tagged @implemented so they actually run. Mutation-checked two: ignoring the closed filter fails the hidden-by-default scenario, dropping the cycle marker fails the cycle scenario. Suite 277/277, go vet clean. README documents it with a verified jq example. Not done: reusing this walker in --dashboard (task-ylk), which the ticket floats as a follow-up.
