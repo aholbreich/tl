@@ -186,24 +186,31 @@ jobs:
     # Arch tooling (makepkg, repo-add, updpkgsums) only exists on Arch.
     container: archlinux:base-devel
     # Set repository variable UPDATE_PACMAN_REPO=true and secret
-    # PACMAN_REPO_TOKEN to enable automatic pacman repository updates.
+    # PACMAN_REPO_DEPLOY_KEY to enable automatic pacman repository updates.
     if: ${{ vars.UPDATE_PACMAN_REPO == 'true' }}
     steps:
       # Must precede any JavaScript action: the Arch image ships no Node, and
       # actions/checkout cannot run without it.
       - name: Install toolchain
-        run: pacman -Syu --noconfirm --needed git nodejs pacman-contrib
+        # openssh is required by the pacman-repo checkout below: the Arch
+        # image ships no ssh client, and actions/checkout's ssh-key input
+        # cannot configure a transport that does not exist.
+        run: pacman -Syu --noconfirm --needed git nodejs pacman-contrib openssh
 
       - name: Checkout tl
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
+      # A write-scoped deploy key rather than a personal access token: it
+      # reaches exactly one repository and nothing else the account owns,
+      # where the token the other two jobs use carries the whole account's
+      # permissions. Revoking it is a single click on pacman-repo.
       - name: Checkout pacman repo
         uses: actions/checkout@v6
         with:
           repository: aholbreich/pacman-repo
-          token: ${{ secrets.PACMAN_REPO_TOKEN }}
+          ssh-key: ${{ secrets.PACMAN_REPO_DEPLOY_KEY }}
           path: pacman-repo
 
       - name: Build tl-bin package

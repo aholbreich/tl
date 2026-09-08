@@ -410,3 +410,6 @@
 {"time":"2026-09-08T19:30:34Z","event":"reference_added","task_id":"task-xu2","actor":"claude","value":"task-q32"}
 {"time":"2026-09-08T19:48:29Z","event":"note_added","task_id":"task-xu2","actor":"claude"}
 {"time":"2026-09-08T19:48:29Z","event":"note_added","task_id":"task-xu2","actor":"claude"}
+{"time":"2026-09-08T19:52:13Z","event":"note_added","task_id":"task-8xx","actor":"claude"}
+{"time":"2026-09-08T19:52:13Z","event":"released","task_id":"task-8xx","actor":"claude"}
+{"time":"2026-09-08T19:52:28Z","event":"note_added","task_id":"task-xu2","actor":"claude"}
