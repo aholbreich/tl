@@ -64,6 +64,57 @@ Feature: Rendering the dependency graph
     And the output contains "open"
 
   # -------------------------------------------------------------------------
+  # Priority and colour follow the tl list conventions.
+  # -------------------------------------------------------------------------
+  Scenario: Each node shows its priority
+    Given the following tasks exist:
+      | id          | status | priority | title              |
+      | task-abc123 | open   | high     | High priority task |
+    When the developer runs `tl tree`
+    Then the tree row for "task-abc123" contains "high"
+
+  Scenario: Rendering with forced colour highlights priority values
+    Given the following tasks exist:
+      | id          | status | priority | title                |
+      | task-abc123 | open   | high     | High priority task   |
+      | task-def456 | open   | medium   | Medium priority task |
+      | task-ghi789 | open   | low      | Low priority task    |
+    When the developer runs `tl --color=always tree`
+    Then the output colorizes "high" with "red"
+    And the output colorizes "medium" with "yellow"
+    And the output colorizes "low" with "blue"
+
+  Scenario: Closed rows are dimmed when revealed with --all
+    Given a task "task-par001" titled "Add RSS sources"
+    And a task "task-don001" with status "done"
+    And "task-par001" depends on "task-don001"
+    When the developer runs `tl --color=always tree --all`
+    Then the output colorizes the line for "task-don001" with "dim"
+
+  # -------------------------------------------------------------------------
+  # Spec status — the same flag list and ready carry.
+  # -------------------------------------------------------------------------
+  Scenario: The tree reports the spec of a referenced feature file
+    Given a task "task-abc123" with reference "features/login.feature"
+    And the repository has a feature file "features/login.feature" with 3 scenarios
+    When the developer runs `tl tree --spec-status`
+    Then the tree row for "task-abc123" contains "features/login.feature (3)"
+
+  Scenario: A dependency carries its own spec in the tree
+    Given a task "task-par001" titled "Add RSS sources"
+    And a task "task-chi001" with reference "features/login.feature"
+    And "task-par001" depends on "task-chi001"
+    And the repository has a feature file "features/login.feature" with 2 scenarios
+    When the developer runs `tl tree task-par001 --spec-status`
+    Then the tree row for "task-chi001" contains "features/login.feature (2)"
+
+  Scenario: Plain tree does not resolve specs
+    Given a task "task-abc123" with reference "features/login.feature"
+    And the repository has a feature file "features/login.feature" with 3 scenarios
+    When the developer runs `tl tree`
+    Then the output does not contain "features/login.feature"
+
+  # -------------------------------------------------------------------------
   # Closed tasks — hidden by default, like tl list.
   # -------------------------------------------------------------------------
   Scenario: A closed dependency is hidden by default

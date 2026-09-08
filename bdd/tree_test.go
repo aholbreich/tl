@@ -15,6 +15,7 @@ func initializeTreeSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^the output shows "([^"]*)" at depth (\d+)$`, w.treeShowsAtDepth)
 	ctx.Step(`^the output shows "([^"]*)" (\d+) times$`, w.treeShowsNTimes)
 	ctx.Step(`^the output marks "([^"]*)" as a cycle$`, w.treeMarksCycle)
+	ctx.Step(`^the tree row for "([^"]*)" contains "([^"]*)"$`, w.treeRowContains)
 	ctx.Step(`^the JSON tree root "([^"]*)" has a child "([^"]*)"$`, w.jsonTreeRootHasChild)
 	ctx.Step(`^the JSON tree root "([^"]*)" has no children$`, w.jsonTreeRootHasNoChildren)
 }
@@ -76,6 +77,17 @@ func (w *world) treeShowsNTimes(id string, want int) error {
 	got := len(w.treeLinesFor(id))
 	if got != want {
 		return fmt.Errorf("expected %s %d times, found %d; got:\n%s", id, want, got, w.stdout.String())
+	}
+	return nil
+}
+
+func (w *world) treeRowContains(id, want string) error {
+	line, err := w.treeLineFor(id)
+	if err != nil {
+		return err
+	}
+	if !strings.Contains(line, want) {
+		return fmt.Errorf("tree row for %s does not contain %q; row: %s", id, want, line)
 	}
 	return nil
 }

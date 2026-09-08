@@ -251,7 +251,7 @@ tl release <id>                    # step away cleanly (leave a note first)
 tl list [--all --status s --tag t --mine] [--type t --priority p] [--json]
 tl list --dashboard [--tag t] > tasks.md  # regeneratable Markdown overview
 tl list --spec-status              # add a column for referenced .feature specs
-tl tree [<id>] [--all] [--json]     # dependency graph as a forest
+tl tree [<id>] [--all] [--spec-status] [--json]  # dependency graph as a forest
 tl show <id> [--json]              # full task detail
 tl history [<id>] [--json]         # event-by-event audit trail
 tl stale                           # claims whose lease has expired
@@ -299,12 +299,17 @@ and a root is a task nothing else depends on.
 
 ```
 $ tl tree
-task-tvp        Test AUR build and installation end-to-end       open
-└─ task-o9g     Publish tl-bin initial import to AUR             open
-   └─ task-8xx  Register AUR account and set up SSH access       in_progress
-task-ahk        Report feature-level spec tags                   open
-└─ task-hwb     Document the @implemented tag convention         open
+task-tvp        Test AUR build and installation end-to-end  open         medium
+└─ task-o9g     Publish tl-bin initial import to AUR        open         high
+   └─ task-8xx  Register AUR account and set up SSH access  in_progress  high
+task-ahk        Report feature-level spec tags              open         medium
+└─ task-hwb     Document the @implemented tag convention    open         low
 ```
+
+Priority is coloured exactly as in `tl list` — red, yellow, blue for high,
+medium and low — and closed rows are dimmed when `--all` reveals them.
+`tl tree --spec-status` adds the same spec column that `list` and `ready`
+carry, so a blocked slice and its specification are visible together.
 
 With a task id, only that subtree is drawn. Closed tasks are hidden by
 default and revealed by `--all`, matching `tl list`; naming a task explicitly
