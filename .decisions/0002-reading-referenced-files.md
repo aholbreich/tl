@@ -1,6 +1,6 @@
 # 0002. Reading referenced files from read commands
 
-**Status:** Proposed (2026-09-08)
+**Status:** Accepted (2026-09-08)
 
 ## Context
 
@@ -50,39 +50,58 @@ time weakens two properties:
 
 ## Decision
 
-**Proposed:** read commands may open referenced files, under four limits.
+Read commands may open referenced files, **only behind an explicit flag**,
+and only at file granularity.
 
 1. **The reference is the trigger.** tl performs no project-level detection —
    no `features/` directory convention, no build-tool sniffing, no mode flag.
    A file is read only because a task points at it. A project that
    references no specs sees no reads and no output change, automatically.
 
-2. **Two cost tiers.** Existence is a `stat` and may be unconditional, since
-   `doctor` already pays that cost. Parsing file *contents* happens only for
-   references that carry a scenario anchor, or when explicitly requested by
-   a flag. Reads are bounded by the number of tasks carrying spec
-   references, never by ledger size.
+2. **Explicit flag, never the default path.** Plain `tl list`, `tl ready`,
+   `tl show` and `tl tree` read nothing outside `.tl/`. Reads happen when
+   the reader asks: `tl list --spec-status`. The default-path guarantee — a
+   listing costs one directory of Markdown and nothing else — is preserved
+   exactly.
 
-3. **Automatic in human output, explicit in JSON.** `show`, `list` and `tree`
-   may enrich their human-facing output silently. `--json` keys are always
-   present and null when there is nothing to say, so a consumer's schema
-   never changes because someone added a feature file.
+3. **File granularity only.** A spec reference names a file. tl does not
+   parse a scenario name out of the reference, and does not look for a
+   ledger identifier inside the spec. Both were considered and rejected
+   (alternatives 5 and 6); each buys story-level precision at a cost the
+   project is not willing to pay.
 
-4. **Structure, never semantics.** tl reports what it can observe — the file
-   exists, it holds N scenarios, the named scenario resolves, these tags are
-   present. tl assigns no meaning to any tag and never concludes that work
-   is "done". Interpreting the vocabulary belongs to the consumer.
+4. **Schema-stable JSON.** The `spec` key is always present in `--json`
+   output and null when the flag was not passed, so a consumer's schema
+   never depends on which flags were used or on whether a project writes
+   Gherkin.
+
+5. **Structure, never semantics.** tl reports what it can observe — the file
+   exists, it holds N scenarios, these feature-level tags are present. tl
+   assigns no meaning to any tag and never concludes that work is done.
+   Interpreting the vocabulary belongs to the consumer.
+
+### What this deliberately does not deliver
+
+A feature file describes a capability; a story is usually a slice of one.
+At file granularity tl cannot say whether *this story's* behaviour is
+specified — only that a spec file the story points at exists and carries
+certain tags. A story sharing a mature feature file with delivered work will
+show that file's tags while being unbuilt.
+
+That is the accepted ceiling of this decision, not an oversight. Delivery
+state remains the ledger's own status; the spec column sits beside it, and
+the reader draws the join.
 
 ### Consequences
 
 **Accepted costs:**
 
-- Output depends on working-tree state, not the ledger alone. This is a
-  stated property: the divergence between ledger and spec is the signal, not
-  a defect.
-- Read commands acquire a failure mode they did not have. Every read must
-  degrade to "unknown" rather than erroring; a listing must never fail
-  because a referenced file was deleted.
+- Spec information is coarse. See above.
+- Output under the flag depends on working-tree state, not the ledger alone.
+  The divergence between ledger and spec is the signal, not a defect.
+- Read commands acquire a failure mode they did not have. Under the flag,
+  every read must degrade to "unknown" rather than erroring; a listing must
+  never fail because a referenced file was deleted.
 - tl learns one spec format's grammar. The interface is named for reference
   resolution, not Gherkin, so a second resolver does not require a redesign —
   but the first one still has to be written.
@@ -92,6 +111,9 @@ time weakens two properties:
 - No cached or stored spec state in frontmatter that can disagree with the
   file.
 - No project configuration, no detection heuristic, no enable flag.
+- No new reference syntax, so no change to how `tl doctor` validates
+  references and no risk of `--fix` destroying links.
+- No ledger identifiers written into specification files.
 - No test execution, no build tooling, no report ingestion (PRD §4).
 
 ## Alternatives considered
@@ -107,23 +129,40 @@ time weakens two properties:
    command is the wrong place for everyday queries, but it remains the
    safe retreat if limit 2 proves too costly in practice.
 
-3. **Opt-in flag on read commands only.** All reads behind an explicit
-   `--spec-status`. Rejected as too weak: existence is already paid for by
-   `doctor` at the same cost, and hiding it behind a flag means the default
-   view stays uninformative for no saving. Retained for the parsing tier.
-
-4. **Always, everywhere.** Spec status wherever a spec reference appears,
+3. **Always, everywhere.** Spec status wherever a spec reference appears,
    including bulk JSON by default. Rejected: it makes every listing pay for
    a feature most projects will not use, and it changes JSON shape based on
    working-tree state.
+
+4. **Automatic in human output, explicit in JSON.** Enrich `list`, `show`
+   and `tree` silently since they are already for people, and gate only the
+   machine-readable path. Rejected: it makes plain `tl list` cost one file
+   read per row and makes the same ledger render differently on two
+   machines. The default path stays pure.
+
+5. **Scenario anchors in the reference** —
+   `--ref "features/login.feature#Signing in"`. Buys story-level
+   granularity with no change to spec files. Rejected: the link is an exact
+   match against a human-written title, so renaming a scenario — ordinary
+   editing, not a mistake — breaks it silently. It also requires new
+   reference syntax, which `tl doctor` would treat as a dead path and
+   `--fix` would delete. Addable later as a second resolver if file
+   granularity proves too coarse in practice.
+
+6. **Ledger identifiers tagged on scenarios** — `@task-kd0` above the
+   scenario, the way teams tag `@JIRA-1234`. Robust to renames, standard
+   Gherkin, and needs no new reference syntax. Rejected on artefact
+   lifetime: the specification is the durable artefact and the ledger is
+   working state, so ticket identifiers embedded in specs outlive their
+   meaning and degrade the spec for later readers.
 
 ## Open questions
 
 - Does a *missing* referenced file mean "no spec" or "broken link"? `doctor`
   calls it a warning today; an enriched listing must render it as one or the
   other, and they carry opposite meanings.
-- What does `tl tree` render for a node whose spec is unresolved, and should
-  that propagate to an ancestor whose own spec resolves?
+- If a scenario count is displayed, does a `Scenario Outline` count as one
+  block or as one per `Examples` row? Cosmetic; count blocks and document it.
 - Which resolver is second? Not to build it — to check the interface is not
   accidentally Gherkin-shaped.
 
