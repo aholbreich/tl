@@ -1,11 +1,11 @@
 ---
 id: task-npt
 title: Add --actor to resolve and refine for consistency
-status: open
+status: done
 priority: low
 type: task
 created_at: 2026-09-08T13:35:06Z
-updated_at: 2026-09-08T13:35:06Z
+updated_at: 2026-09-08T17:54:27Z
 created_by: claude
 assignee: null
 depends_on: []
@@ -20,6 +20,7 @@ references:
   - cmd/refine.go
   - features/resolve.feature
   - features/actor.feature
+  - features/update-actor.feature
 ---
 
 ## Description
@@ -44,3 +45,8 @@ Add the standard `--actor` flag to both commands, with the same precedence as ev
 ## Acceptance
 
 features/resolve.feature and features/refine.feature gain a scenario each asserting the recorded event carries the actor passed on the flag.
+
+## Notes
+
+- 2026-09-08T17:52:56Z [pi-actor] note: Claimed and reviewed all references. Added features/update-actor.feature first for fallback/no-op/reference attribution and added explicit-actor scenarios to resolve/refine plus editor coverage. Existing code inspection found refine events are currently anonymous, including reference changes; events.Append does not resolve actors. Implementing the requested shared ResolveActor fallback for these paths as well as explicit flags. Initial BDD red run confirms missing flags and missing editor attribution.
+- 2026-09-08T17:54:27Z [pi-actor] note: Implemented --actor on resolve and refine via the shared ResolveActor chain: flag > TL_ACTOR > ACTOR_NAME > BEADS_ACTOR > detection. Resolution attributes both the pending_resolved event and answer note. Refinement attributes regular field updates, editor updates, and reference-added/removed events; no-op and validation behavior preserved. Refine previously emitted anonymous events, now receives the requested standard fallback. Added the new BDD feature first plus required resolve/refine scenarios and editor coverage; initial red tests confirmed missing flags/attribution. Updated README and usage examples. Verification: make bdd passed all 306 scenarios; make test, go vet ./..., gofmt and git diff --check passed. Built-binary smoke test in a temporary ledger verified --actor aho overriding TL_ACTOR in JSON-mode resolve/refine, reference events and answer note. Dogfooded the new refine flag to attach features/update-actor.feature to this task. No commit made.
