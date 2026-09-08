@@ -47,6 +47,42 @@ func TestDashboardEscapesUserText(t *testing.T) {
 	}
 }
 
+func TestDashboardCode(t *testing.T) {
+	for _, tc := range []struct{ input, want string }{
+		{"in_progress", "`in_progress`"},
+		{"aho", "`aho`"},
+		{"", "`-`"},
+		{" \t\n", "`-`"},
+		{"review\n\t team\x1b", "`review team`"},
+		{"**lead** <script>&", "`**lead** <script>&`"},
+		{"agent`name", "``agent`name``"},
+		{"`aho`", "`` `aho` ``"},
+		{"team``lead`", "``` team``lead` ```"},
+	} {
+		if got := dashboardCode(tc.input); got != tc.want {
+			t.Errorf("dashboardCode(%q) = %q, want %q", tc.input, got, tc.want)
+		}
+	}
+}
+
+func TestDashboardCompactMetadata(t *testing.T) {
+	actor := "`aho`\nreview"
+	tasks := []*task.Task{{
+		ID: "task-api", Title: "Document API", Status: "in_progress", Priority: "high",
+		Type: "research_question", Claim: task.Claim{Actor: &actor},
+	}}
+	got := renderDashboard(tasks)
+	want := "`in_progress` · **high** · `research_question` · 👤 `` `aho` review ``\n"
+	if !strings.Contains(got, want) {
+		t.Fatalf("dashboard missing compact metadata %q:\n%s", want, got)
+	}
+	for _, label := range []string{"- Status:", "- Priority:", "- Type:", "- Claimant:"} {
+		if strings.Contains(got, label) {
+			t.Errorf("dashboard still contains metadata bullet %q", label)
+		}
+	}
+}
+
 func TestDashboardOrdering(t *testing.T) {
 	now := time.Now()
 	tasks := []*task.Task{

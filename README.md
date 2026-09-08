@@ -268,6 +268,12 @@ type, claimant, a one-line description capped at 240 characters, and references.
 Missing types display and filter as `task`. References are displayed as text,
 not interpreted as links. Notes are omitted to keep the overview compact.
 
+Metadata occupies one line in status · priority · type · claimant order:
+
+`in_progress` · **high** · `task` · 👤 `aho`
+
+The 👤 icon identifies the claimant; `-` means unclaimed.
+
 All list filters compose: `--status`, `--claimed-by`, `--mine`, `--tag`,
 `--type`/`-t`, and `--priority`/`-p` (including `l`, `m`, `h` aliases).
 `--status done` or `--status cancelled` includes that status without `--all`.

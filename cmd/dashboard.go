@@ -25,8 +25,8 @@ func renderDashboard(tasks []*task.Task) string {
 			lastStatus = t.Status
 		}
 		fmt.Fprintf(&out, "\n### %s: %s\n\n", dashboardText(t.ID), dashboardText(t.Title))
-		fmt.Fprintf(&out, "- Status: %s\n- Priority: %s\n- Type: %s\n- Claimant: %s\n",
-			dashboardText(t.Status), dashboardText(t.Priority), dashboardText(effectiveTaskType(t)), dashboardText(listClaimActor(t)))
+		fmt.Fprintf(&out, "%s · **%s** · %s · 👤 %s\n",
+			dashboardCode(t.Status), dashboardText(t.Priority), dashboardCode(effectiveTaskType(t)), dashboardCode(listClaimActor(t)))
 		if description := dashboardSummary(task.ParseBody(t.Body).Description); description != "" {
 			fmt.Fprintf(&out, "\nDescription: %s\n", dashboardText(description))
 		}
@@ -77,14 +77,37 @@ func dashboardSummary(description string) string {
 	return string(runes)
 }
 
+// Code spans keep metadata literal without visible Markdown escapes. A longer
+// delimiter and boundary padding allow values containing backticks too.
+func dashboardCode(text string) string {
+	text = dashboardOneLine(text)
+	if text == "" {
+		text = "-"
+	}
+	delimiter := "`"
+	for strings.Contains(text, delimiter) {
+		delimiter += "`"
+	}
+	if strings.HasPrefix(text, "`") || strings.HasSuffix(text, "`") {
+		text = " " + text + " "
+	}
+	return delimiter + text + delimiter
+}
+
+func dashboardOneLine(text string) string {
+	text = strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) && !unicode.IsSpace(r) {
+			return -1
+		}
+		return r
+	}, text)
+	return strings.Join(strings.Fields(text), " ")
+}
+
 // Keep user text from injecting headings, HTML or terminal control sequences.
 func dashboardText(text string) string {
-	runes := []rune(strings.Join(strings.Fields(text), " "))
 	var out strings.Builder
-	for _, r := range runes {
-		if unicode.IsControl(r) {
-			continue
-		}
+	for _, r := range dashboardOneLine(text) {
 		switch r {
 		case '&':
 			out.WriteString("&amp;")

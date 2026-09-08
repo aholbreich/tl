@@ -23,22 +23,23 @@ Feature: Task dashboard
 
       ### task-cli: Improve CLI output
 
-      - Status: in\_progress
-      - Priority: medium
-      - Type: task
-      - Claimant: codex
+      `in_progress` · **medium** · `task` · 👤 `codex`
 
       ## Open
 
       ### task-api: Document API
 
-      - Status: open
-      - Priority: high
-      - Type: task
-      - Claimant: -
+      `open` · **high** · `task` · 👤 `-`
 
       Description: Describe the public endpoints.
       """
+
+  Scenario: Task metadata fits on a single line
+    Given the following tasks exist:
+      | id       | status      | priority | type | claimed by | title        |
+      | task-api | in_progress | high     | task | aho        | Document API |
+    When the developer runs `tl list --dashboard`
+    Then the dashboard contains the line "`in_progress` · **high** · `task` · 👤 `aho`"
 
   Scenario: The dashboard includes task references
     Given a task "task-api" with references "features/list.feature" and "https://example.org/api"

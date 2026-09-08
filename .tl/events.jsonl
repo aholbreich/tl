@@ -331,3 +331,10 @@
 {"time":"2026-09-08T12:36:33Z","event":"closed","task_id":"task-ylk","actor":"pi-dashboard"}
 {"time":"2026-09-08T12:38:26Z","event":"note_added","task_id":"task-ps0","actor":"claude"}
 {"time":"2026-09-08T12:38:26Z","event":"closed","task_id":"task-ps0","actor":"claude"}
+{"time":"2026-09-08T12:52:24Z","event":"created","task_id":"task-pyj","actor":"pi-dashboard"}
+{"time":"2026-09-08T12:52:24Z","event":"reference_added","task_id":"task-pyj","actor":"pi-dashboard","value":"task-ylk"}
+{"time":"2026-09-08T12:52:24Z","event":"reference_added","task_id":"task-pyj","actor":"pi-dashboard","value":"features/list-dashboard.feature"}
+{"time":"2026-09-08T12:52:24Z","event":"reference_added","task_id":"task-pyj","actor":"pi-dashboard","value":"cmd/dashboard.go"}
+{"time":"2026-09-08T12:52:28Z","event":"claimed","task_id":"task-pyj","actor":"pi-dashboard"}
+{"time":"2026-09-08T12:53:51Z","event":"note_added","task_id":"task-pyj","actor":"pi-dashboard"}
+{"time":"2026-09-08T12:53:51Z","event":"closed","task_id":"task-pyj","actor":"pi-dashboard"}
