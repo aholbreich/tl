@@ -78,7 +78,13 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		// XDG_CONFIG_HOME). The completion-install command resolves paths
 		// from these before falling back to $HOME, so an inherited value
 		// makes scenarios that only override HOME non-deterministic.
-		for _, key := range []string{"XDG_CONFIG_HOME", "XDG_DATA_HOME", "ZDOTDIR"} {
+		//
+		// Agent markers are cleared for the same reason: this suite runs
+		// inside coding harnesses that export them, and a leaked
+		// CLAUDE_CODE_SESSION_ID would decide every auto-detection scenario
+		// regardless of what the scenario set up.
+		clear := append([]string{"XDG_CONFIG_HOME", "XDG_DATA_HOME", "ZDOTDIR"}, cmd.ActorDetectionEnv()...)
+		for _, key := range clear {
 			if err := os.Unsetenv(key); err != nil {
 				return ctx, err
 			}
