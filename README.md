@@ -99,9 +99,14 @@ tl note <id> -m "Blocked on the API key; handing back." --actor agent-a
 tl release <id> --actor agent-a          # step away cleanly — or tl close when done
 ```
 
-Identity resolves in order: `--actor` flag > `TL_ACTOR` env > `ACTOR_NAME` env
-> agent auto-detection (Claude Code, Codex, aider, Windsurf, pi, …). Setting
-`TL_ACTOR` once per session is the easiest way to stay attributed.
+Identity resolves in order: `--actor` flag > `TL_ACTOR` > `ACTOR_NAME` >
+`BEADS_ACTOR` > agent auto-detection > hostname. Detection recognises Claude
+Code, aider, Windsurf and pi from the environment variables those harnesses
+export, and Codex from a `.codex` file. Cursor and GitHub Copilot are
+deliberately not detected: their variables are set by plain VS Code or are
+long-lived auth tokens, so a guess there would silently attribute one agent's
+claims to another. Setting `TL_ACTOR` once per session is the easiest way to
+stay attributed.
 
 ---
 

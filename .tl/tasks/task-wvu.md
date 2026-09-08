@@ -1,11 +1,11 @@
 ---
 id: task-wvu
 title: 'Extend agent auto-detection: aider, windsurf, pi env vars'
-status: open
+status: done
 priority: low
 type: feature
 created_at: 2026-05-30T18:38:46Z
-updated_at: 2026-05-30T18:38:49Z
+updated_at: 2026-09-08T17:32:10Z
 created_by: human
 assignee: null
 depends_on: []
@@ -61,3 +61,4 @@ Update features/actor.feature with scenarios for each new agent marker.
 ## Notes
 
 - 2026-05-30T18:38:49Z [pi:planning] note: Behavior details: - No --actor flag, no TL_ACTOR/ACTOR_NAME/BEADS_ACTOR, but AIDER_MODEL is set → actor becomes 'aider' - No --actor flag, no TL_ACTOR/ACTOR_NAME/BEADS_ACTOR, but CODEIUM_API_KEY is set → actor becomes 'windsurf' - No --actor flag, no TL_ACTOR/ACTOR_NAME/BEADS_ACTOR, but PI_CODING_AGENT=true → actor becomes 'pi' (checked before PI_AGENT_ID) - Detection order: PI_CODING_AGENT → CLAUDE_CODE_SESSION_ID → AIDER_MODEL → CODEIUM_API_KEY → PI_AGENT_ID → .codex → hostname - Cursor intentionally skipped: VSCODE_IPC_HOOK gives false positives with regular VS Code
+- 2026-09-08T17:32:10Z [claude] note: Implemented. Detection is now a table of agentMarkers ordered by precedence: PI_CODING_AGENT=true, CLAUDE_CODE_SESSION_ID, AIDER_MODEL, CODEIUM_API_KEY, PI_AGENT_ID, then the .codex file, then hostname. PI_CODING_AGENT is matched on the exact value 'true' rather than on presence, since a harness exporting the flag as 'false' is asserting the opposite; every other marker is presence-only. Cursor and GitHub Copilot stayed out, as the ticket specified — VSCODE_* is set by plain VS Code and GITHUB_COPILOT_TOKEN is a long-lived credential rather than a session marker, and a false positive here silently attributes one agent's claims to another. Found and fixed a test-isolation bug while adding the scenarios: the BDD Before hook cleared only XDG_* and ZDOTDIR, so agent markers leaked from the host. This suite runs inside coding harnesses that export CLAUDE_CODE_SESSION_ID, which would have decided every detection scenario regardless of setup — the tests would pass on a bare CI runner and fail on a developer machine, or vice versa. The hook now also clears cmd.ActorDetectionEnv(), which is derived from the marker table so a marker added later cannot drift out of the cleared set; TestActorDetectionEnvCoversEveryMarker pins that. Verified the fix is load-bearing: reverting just that line fails exactly 4 of the new scenarios on this host. Tests: 7 BDD scenarios plus a table-driven unit test covering each marker, both precedence pairs, the false-flag fall-through, and the hostname fallback. Suite 290/290, go vet clean. README corrected — it already advertised aider and Windsurf detection before this existed, and omitted BEADS_ACTOR and the hostname fallback from the documented chain.
