@@ -248,7 +248,8 @@ tl remove <id> -m "..." [--force]  # delete a mistaken task file from the active
 tl release <id>                    # step away cleanly (leave a note first)
 
 # Inspect
-tl list [--all --status s --tag t --mine] [--json]      # browse tasks
+tl list [--all --status s --tag t --mine] [--type t --priority p] [--json]
+tl list --dashboard [--tag t] > tasks.md  # regeneratable Markdown overview
 tl show <id> [--json]              # full task detail
 tl history [<id>] [--json]         # event-by-event audit trail
 tl stale                           # claims whose lease has expired
@@ -257,6 +258,30 @@ tl doctor [--json] [--fix] [--force] # scan ledger for integrity issues (optiona
 # Agents
 tl agents [--compact] [--write-files [--dry-run] [--file path]] # print or install agent workflow guide
 ```
+
+### Markdown dashboard
+
+`tl list --dashboard` writes a plain Markdown snapshot to stdout, grouped by
+status in list order (pending human, blocked, in progress, open; then done and
+cancelled with `--all`). Each task includes its ID, title, status, priority,
+type, claimant, a one-line description capped at 240 characters, and references.
+Missing types display and filter as `task`. References are displayed as text,
+not interpreted as links. Notes are omitted to keep the overview compact.
+
+All list filters compose: `--status`, `--claimed-by`, `--mine`, `--tag`,
+`--type`/`-t`, and `--priority`/`-p` (including `l`, `m`, `h` aliases).
+`--status done` or `--status cancelled` includes that status without `--all`.
+`--json` takes precedence over `--dashboard` and keeps the existing list JSON
+format. Markdown never includes terminal colors or generation timestamps, and
+listing does not modify the ledger.
+
+```sh
+tl list --dashboard --type feature --priority high > roadmap.md
+tl list --dashboard --tag docs > docs-tasks.md
+```
+
+There is no dedicated area or due-date field; use tags to scope areas of work.
+Watch mode and dependency-tree rendering are not part of the dashboard.
 
 **Exit codes:** `0` success · `1` generic · `2` invalid args · `3` task not found · `4` task not ready · `5` already claimed · `7` lock failed
 
