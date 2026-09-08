@@ -1,11 +1,11 @@
 ---
 id: task-ylk
 title: Add tl list --dashboard flag for human-readable Markdown overview
-status: open
+status: done
 priority: medium
 type: task
 created_at: 2026-06-04T13:05:07Z
-updated_at: 2026-06-04T13:05:07Z
+updated_at: 2026-09-08T12:36:33Z
 created_by: human
 assignee: null
 depends_on: []
@@ -51,3 +51,9 @@ A project maintains a curated Markdown knowledge base. Some unresolved items are
 - Works with --json for programmatic consumers AND as plain Markdown for humans
 - Does not introduce a new storage format — tasks remain in .tl/tasks/
 - Respects existing filters (--type, --priority, --status) to produce scoped dashboards
+
+## Notes
+
+- 2026-09-08T11:53:59Z [claude] note: Cross-reference from an external adopter (rssb). A grouped overview was wanted there too and this ticket already covers it, so no duplicate was filed. Two notes on scope. 1. Grouping and structure are different axes. The dashboard as described groups a flat list by status or type. The other thing readers ask for is the dependency shape — which slices a feature decomposed into, and which one is blocking. That is filed separately as task-7fi (`tl tree`), since it is a different rendering of different data. If both land, `--dashboard` may want to reuse the tree walker rather than growing its own nesting. 2. The dashboard will want references. In rssb the useful overview joined each ticket to the `.feature` file specifying it, which needs references present in bulk output — currently missing, filed as task-ps0. Worth treating as a prerequisite if the dashboard is meant to link tasks to their artefacts.
+- 2026-09-08T12:29:20Z [pi-dashboard] note: Reviewed context and added features/list-dashboard.feature first. Implementing status grouping, compact descriptions/references, deterministic Markdown, existing claim/status/tag filters plus type/priority filters, and JSON precedence. Current Task model has no area/due-date fields; watch is optional and dependency trees belong to task-7fi. Bulk JSON references remain task-ps0; Markdown can read Task.References directly.
+- 2026-09-08T12:36:33Z [pi-dashboard] note: Completed the scoped first dashboard after user requested continuation. Added BDD spec first (initial red run confirmed missing --dashboard), then cmd/dashboard.go renderer and list flag/filter integration. Status-grouped Markdown includes ID/title/status/priority/type/claimant, 240-code-point description summaries and references; escapes Markdown/HTML/control characters, omits notes/colors/timestamps, and never mutates ledger data. Added --type/-t and --priority/-p filters for all list formats; existing filters compose, --json takes precedence, and ID tie-breaking stabilizes identical timestamps. README documents usage and scope. Verification: make bdd passed all 247 scenarios; make test, go vet ./..., gofmt check and git diff --check passed. Unit tests cover Unicode truncation/escaping, ordering, JSON compatibility, invalid priorities and read-only snapshots. Smoke-tested go run . list --dashboard --type task --priority medium --tag aur with redirected Markdown. Dedicated area/due-date design preserved in follow-up task-n6n; optional watch is deferred, dependency trees remain task-7fi, bulk JSON references remain task-ps0. No unrelated code or existing ledger changes reverted; no commit made.

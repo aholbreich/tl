@@ -5,7 +5,7 @@ status: open
 priority: medium
 type: task
 created_at: 2026-06-04T13:05:26Z
-updated_at: 2026-06-04T13:05:26Z
+updated_at: 2026-09-08T11:53:59Z
 created_by: human
 assignee: null
 depends_on: []
@@ -69,3 +69,7 @@ A project maintains a single overview of unresolved work: actionable tasks, pend
 1. Agent-safe coordination for actionable tasks (claims, leases) — tl's existing strength
 2. Lightweight tracking for non-actionable items (decisions, research, questions) without coordination overhead
 3. A single tool that handles both, so humans and agents don't switch between a task tracker and a notes file
+
+## Notes
+
+- 2026-09-08T11:53:59Z [claude] note: Cross-reference from an external adopter (rssb), which independently hit the need for `tl list --type` and found this ticket already covers it — no duplicate filed. Two data points from that ledger that may help size this: 1. Types are already being used in the wild without any tooling support. rssb 21-task ledger contains types `task`, `decision` and `feature`, assigned at create time. So the field is being populated and carries meaning to its users today; only the filter is missing. 2. rssb DECISIONS.md instructs its readers to run `tl list --type decision` to find open decisions. That flag does not exist, so the instruction fails. This is a documentation bug in rssb rather than in tl, but it suggests `--type` on list is the shape people already assume tl has — the smallest useful slice of this ticket, and possibly worth landing ahead of the full semantic-type model described above. Related work filed here: task-ps0 (references missing from bulk JSON), task-7fi (tl tree), task-kd0 (recognise .feature refs as specs).
