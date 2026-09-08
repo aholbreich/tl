@@ -157,6 +157,11 @@ func List(ledger string) ([]*task.Task, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parse task %s: %w", p, err)
 		}
+		// Mirror Read: yaml omitempty leaves References nil when a task has
+		// none, and bulk JSON must emit [] rather than null.
+		if t.References == nil {
+			t.References = []string{}
+		}
 		tasks = append(tasks, t)
 	}
 
