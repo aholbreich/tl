@@ -18,7 +18,6 @@ import (
 func newTreeCmd() *cobra.Command {
 	var asJSON bool
 	var includeAll bool
-	var specStatus bool
 	c := &cobra.Command{
 		Use:               "tree [TASK_ID]",
 		Short:             "Render the dependency graph",
@@ -44,12 +43,19 @@ func newTreeCmd() *cobra.Command {
 			}
 
 			forest := tree.Build(tasks, rootID, includeAll)
-			specs := resolveSpecsFor(ledger, tasks, specStatus)
+			specs := resolveSpecsFor(ledger, tasks)
 
 			if asJSON {
 				enc := json.NewEncoder(cmd.OutOrStdout())
 				enc.SetIndent("", "  ")
-				return enc.Encode(treeForestJSON(forest))
+				return enc.Encode(treeForestJSON(forest, specs))
+			}
+
+			// The text table drops the column entirely when no listed task
+			// carries a spec, so a project without Gherkin sees the output
+			// it saw before this existed. JSON keeps the key regardless.
+			if !anySpecs(specs) {
+				specs = nil
 			}
 
 			if len(forest) == 0 {
@@ -61,7 +67,6 @@ func newTreeCmd() *cobra.Command {
 	}
 	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output")
 	c.Flags().BoolVarP(&includeAll, "all", "a", false, "Include closed tasks (done and cancelled)")
-	c.Flags().BoolVar(&specStatus, "spec-status", false, specStatusFlagUsage)
 	return c
 }
 
@@ -173,28 +178,36 @@ type treeNodeJSON struct {
 	Title    string         `json:"title"`
 	Status   string         `json:"status"`
 	Priority string         `json:"priority"`
+	Spec     []spec.Spec    `json:"spec"`
 	Cycle    bool           `json:"cycle,omitempty"`
 	Children []treeNodeJSON `json:"children"`
 }
 
-func treeForestJSON(forest []*tree.Node) []treeNodeJSON {
+func treeForestJSON(forest []*tree.Node, specs map[string][]spec.Spec) []treeNodeJSON {
 	out := make([]treeNodeJSON, 0, len(forest))
 	for _, n := range forest {
-		out = append(out, treeNodeJSON1(n))
+		out = append(out, treeNodeJSON1(n, specs))
 	}
 	return out
 }
 
-func treeNodeJSON1(n *tree.Node) treeNodeJSON {
+func treeNodeJSON1(n *tree.Node, specs map[string][]spec.Spec) treeNodeJSON {
 	children := make([]treeNodeJSON, 0, len(n.Children))
 	for _, c := range n.Children {
-		children = append(children, treeNodeJSON1(c))
+		children = append(children, treeNodeJSON1(c, specs))
+	}
+	// Always an array, matching list and ready, so a consumer walking the
+	// tree needs no presence check at any depth.
+	nodeSpecs := specs[n.Task.ID]
+	if nodeSpecs == nil {
+		nodeSpecs = []spec.Spec{}
 	}
 	return treeNodeJSON{
 		ID:       n.Task.ID,
 		Title:    n.Task.Title,
 		Status:   n.Task.Status,
 		Priority: n.Task.Priority,
+		Spec:     nodeSpecs,
 		Cycle:    n.Cycle,
 		Children: children,
 	}

@@ -18,6 +18,9 @@ func initializeTreeSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^the tree row for "([^"]*)" contains "([^"]*)"$`, w.treeRowContains)
 	ctx.Step(`^the JSON tree root "([^"]*)" has a child "([^"]*)"$`, w.jsonTreeRootHasChild)
 	ctx.Step(`^the JSON tree root "([^"]*)" has no children$`, w.jsonTreeRootHasNoChildren)
+	ctx.Step(`^the JSON tree root "([^"]*)" has a spec entry for "([^"]*)"$`, w.jsonTreeRootHasSpec)
+	ctx.Step(`^the JSON tree child "([^"]*)" has a spec entry for "([^"]*)"$`, w.jsonTreeChildHasSpec)
+	ctx.Step(`^the JSON tree root "([^"]*)" has an empty spec array$`, w.jsonTreeRootSpecEmpty)
 }
 
 // treeDepth derives nesting from the branch glyphs preceding the identifier,
@@ -108,7 +111,69 @@ type jsonTreeNode struct {
 	Title    string         `json:"title"`
 	Status   string         `json:"status"`
 	Cycle    bool           `json:"cycle"`
+	Spec     []jsonSpec     `json:"spec"`
 	Children []jsonTreeNode `json:"children"`
+}
+
+// findTreeNode walks the whole forest, so a spec assertion works at any depth
+// rather than only at a root.
+func findTreeNode(nodes []jsonTreeNode, id string) (jsonTreeNode, bool) {
+	for _, n := range nodes {
+		if n.ID == id {
+			return n, true
+		}
+		if found, ok := findTreeNode(n.Children, id); ok {
+			return found, true
+		}
+	}
+	return jsonTreeNode{}, false
+}
+
+func (w *world) jsonTreeNodeSpecs(id string) ([]jsonSpec, error) {
+	var forest []jsonTreeNode
+	if err := json.Unmarshal(w.stdout.Bytes(), &forest); err != nil {
+		return nil, fmt.Errorf("stdout is not a JSON tree (%v); got: %s", err, w.stdout.String())
+	}
+	n, ok := findTreeNode(forest, id)
+	if !ok {
+		return nil, fmt.Errorf("JSON tree has no node %s; got: %s", id, w.stdout.String())
+	}
+	if n.Spec == nil {
+		return nil, fmt.Errorf("JSON node %s has a null spec; expected an array", id)
+	}
+	return n.Spec, nil
+}
+
+func (w *world) jsonTreeRootHasSpec(id, path string) error {
+	return w.jsonTreeNodeHasSpec(id, path)
+}
+
+func (w *world) jsonTreeChildHasSpec(id, path string) error {
+	return w.jsonTreeNodeHasSpec(id, path)
+}
+
+func (w *world) jsonTreeNodeHasSpec(id, path string) error {
+	specs, err := w.jsonTreeNodeSpecs(id)
+	if err != nil {
+		return err
+	}
+	for _, sp := range specs {
+		if sp.Path == path {
+			return nil
+		}
+	}
+	return fmt.Errorf("JSON node %s has no spec entry for %s; got %#v", id, path, specs)
+}
+
+func (w *world) jsonTreeRootSpecEmpty(id string) error {
+	specs, err := w.jsonTreeNodeSpecs(id)
+	if err != nil {
+		return err
+	}
+	if len(specs) != 0 {
+		return fmt.Errorf("JSON node %s spec = %#v, expected empty", id, specs)
+	}
+	return nil
 }
 
 func (w *world) jsonTreeRoot(id string) (jsonTreeNode, error) {

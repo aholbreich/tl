@@ -1,11 +1,11 @@
 ---
 id: task-ahk
-title: Report feature-level spec tags under --spec-status
+title: Report feature-level spec tags on the read commands
 status: open
 priority: medium
 type: task
 created_at: 2026-09-08T11:53:17Z
-updated_at: 2026-09-08T13:34:27Z
+updated_at: 2026-09-08T22:22:54Z
 created_by: claude
 assignee: null
 depends_on:
@@ -159,4 +159,6 @@ A tag is a claim the author makes deliberately, in version control, reviewable i
 
 The `@implemented` convention is currently undocumented — see the guidelines ticket. It should be written down before tl builds behaviour on top of it.
 
+## Notes
 
+- 2026-09-08T22:22:54Z [claude] note: Retitled: the --spec-status flag it named no longer exists. Spec state is now resolved unconditionally on list, ready and tree (decision 0002, amended), so this ticket's tags would appear on the ordinary read commands rather than behind a flag. Nothing else about its scope changes.

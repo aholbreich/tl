@@ -413,3 +413,14 @@
 {"time":"2026-09-08T19:52:13Z","event":"note_added","task_id":"task-8xx","actor":"claude"}
 {"time":"2026-09-08T19:52:13Z","event":"released","task_id":"task-8xx","actor":"claude"}
 {"time":"2026-09-08T19:52:28Z","event":"note_added","task_id":"task-xu2","actor":"claude"}
+{"time":"2026-09-08T21:53:59Z","event":"created","task_id":"task-1rh","actor":"claude"}
+{"time":"2026-09-08T21:53:59Z","event":"reference_added","task_id":"task-1rh","actor":"claude","value":"cmd/tree.go"}
+{"time":"2026-09-08T21:53:59Z","event":"reference_added","task_id":"task-1rh","actor":"claude","value":"internal/spec/spec.go"}
+{"time":"2026-09-08T21:53:59Z","event":"reference_added","task_id":"task-1rh","actor":"claude","value":".decisions/0002-reading-referenced-files.md"}
+{"time":"2026-09-08T21:53:59Z","event":"reference_added","task_id":"task-1rh","actor":"claude","value":"task-ps0"}
+{"time":"2026-09-08T21:53:59Z","event":"reference_added","task_id":"task-1rh","actor":"claude","value":"features/tree.feature"}
+{"time":"2026-09-08T22:22:00Z","event":"claimed","task_id":"task-1rh","actor":"claude"}
+{"time":"2026-09-08T22:22:54Z","event":"refined","task_id":"task-ahk","actor":"claude"}
+{"time":"2026-09-08T22:22:54Z","event":"note_added","task_id":"task-ahk","actor":"claude"}
+{"time":"2026-09-08T22:22:54Z","event":"note_added","task_id":"task-1rh","actor":"claude"}
+{"time":"2026-09-08T22:22:54Z","event":"closed","task_id":"task-1rh","actor":"claude"}

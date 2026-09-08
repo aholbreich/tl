@@ -116,7 +116,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	initializeBulkJSONSteps(ctx, w)
 	initializeListSteps(ctx, w)
 	initializeDashboardSteps(ctx, w)
-	initializeSpecStatusSteps(ctx, w)
+	initializeSpecLinkSteps(ctx, w)
 	initializeTreeSteps(ctx, w)
 	initializeShowSteps(ctx, w)
 	initializeLedgerRequiredSteps(ctx, w)

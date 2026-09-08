@@ -9,29 +9,34 @@ import (
 	"github.com/aholbreich/tl/internal/task"
 )
 
-// specStatusFlagUsage is shared so list and ready describe the flag
-// identically.
-const specStatusFlagUsage = "Resolve referenced .feature specs (reads those files)"
-
-// resolveSpecsFor reads the specifications referenced by tasks. It returns nil
-// when enabled is false, which is what makes the JSON "spec" key null unless
-// the flag was passed — a consumer's schema never depends on the flag, only
-// the value does.
+// resolveSpecsFor reads the specifications referenced by tasks.
 //
-// Reading happens here and nowhere else: the default path of every read
-// command must not open a file outside .tl/ (decision 0002).
-func resolveSpecsFor(ledger string, tasks []*task.Task, enabled bool) map[string][]spec.Spec {
-	if !enabled {
-		return nil
-	}
+// It is unconditional. A task with no .feature reference resolves to an empty
+// slice and costs nothing, so the work is already proportional to how much
+// Gherkin a project actually writes — measured at 3ms across 500 spec files,
+// which is why the flag that used to gate this was removed (decision 0002,
+// amended).
+func resolveSpecsFor(ledger string, tasks []*task.Task) map[string][]spec.Spec {
 	repoRoot := filepath.Dir(ledger)
 	out := make(map[string][]spec.Spec, len(tasks))
 	for _, t := range tasks {
 		// Always non-nil, so a task with no spec reference emits [] rather
-		// than null once the flag is on.
+		// than null.
 		out[t.ID] = spec.Resolve(repoRoot, t.References)
 	}
 	return out
+}
+
+// anySpecs reports whether any task carries a spec reference. Human-facing
+// tables use it to decide whether the column is worth its width: a project
+// that writes no Gherkin sees exactly the output it saw before this existed.
+func anySpecs(specs map[string][]spec.Spec) bool {
+	for _, list := range specs {
+		if len(list) > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 // specCell renders one task's specs for a table column.

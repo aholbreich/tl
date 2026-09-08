@@ -274,8 +274,7 @@ tl release <id>                    # step away cleanly (leave a note first)
 # Inspect
 tl list [--all --status s --tag t --mine] [--type t --priority p] [--json]
 tl list --dashboard [--tag t] > tasks.md  # regeneratable Markdown overview
-tl list --spec-status              # add a column for referenced .feature specs
-tl tree [<id>] [--all] [--spec-status] [--json]  # dependency graph as a forest
+tl tree [<id>] [--all] [--json]    # dependency graph as a forest
 tl show <id> [--json]              # full task detail
 tl history [<id>] [--json]         # event-by-event audit trail
 tl stale                           # claims whose lease has expired
@@ -332,8 +331,8 @@ task-ahk        Report feature-level spec tags              open         medium
 
 Priority is coloured exactly as in `tl list` — red, yellow, blue for high,
 medium and low — and closed rows are dimmed when `--all` reveals them.
-`tl tree --spec-status` adds the same spec column that `list` and `ready`
-carry, so a blocked slice and its specification are visible together.
+`tl tree` carries the same spec column that `list` and `ready` do, so a
+blocked slice and its specification are visible together.
 
 With a task id, only that subtree is drawn. Closed tasks are hidden by
 default and revealed by `--all`, matching `tl list`; naming a task explicitly
@@ -358,13 +357,12 @@ tl tree --json | jq -r '.. | objects | select(.children == []) | .id'   # leaves
 ### Spec status
 
 A reference whose path ends in `.feature` is treated as a **spec reference**.
-That is the whole rule — there is no new flag on `tl create`, no frontmatter
-field and no configuration. `tl show` marks such a reference `(spec)`, which
-costs nothing because it is a string test.
+That is the whole rule — no flag on `tl create`, no frontmatter field, no
+configuration. `tl show` marks such a reference `(spec)`.
 
-`tl list --spec-status` (and `tl ready --spec-status`) adds a column showing
-each referenced spec, whether the file is there, and how many scenarios it
-holds. A `Scenario Outline` counts once, however many `Examples` rows it has.
+`tl list`, `tl ready` and `tl tree` add a column showing each referenced spec,
+whether the file is there, and how many scenarios it holds. A `Scenario
+Outline` counts once, however many `Examples` rows it has.
 
 ```
 ID        Status  Title                     Spec
@@ -373,25 +371,25 @@ task-cys  open    Add tl agents --remove    features/agents.feature (14)
 task-wke  open    Add --type field          -
 ```
 
-This is the **only** path that opens a file outside `.tl/`. Plain `tl list`,
-`tl ready` and `tl show` read the ledger and nothing else, so the default
-output never depends on the state of your working tree. A missing or
-unreadable spec renders as `(missing)` or `(unknown)` rather than failing the
-listing — `tl doctor` is what complains about dead references.
+The column is drawn only when some listed task actually carries a spec
+reference, so a project that writes no Gherkin sees exactly the output it saw
+before this existed and reads no files. Resolving every spec in a 500-task
+ledger costs about 3 ms. A missing or unreadable spec renders as `(missing)`
+or `(unknown)` rather than failing the listing — `tl doctor` is what
+complains about dead references.
 
-In `--json`, the `spec` key is always present: `null` when the flag was not
-passed, an array when it was, so a consumer's schema never changes based on
-which flags were used or on whether the project writes Gherkin.
+In `--json`, `spec` is always an array, never null, so consumers need no
+presence check.
 
 ```sh
-tl list --spec-status --json | jq -r '.[] | select(.spec[]?.state == "missing") | .id'
+tl list --json | jq -r '.[] | select(.spec[]?.state == "missing") | .id'
 ```
 
 **What this does not tell you.** The link is to a *file*. A feature file
-usually describes a capability while a task is a slice of one, so a spec
-column says "this task points at a spec that exists", not "this task's
-behaviour is specified" — and never that the work is done. Delivery state
-stays in the task's own status, beside it. See
+usually describes a capability while a task is a slice of one, so the column
+says "this task points at a spec that exists", not "this task's behaviour is
+specified" — and never that the work is done. Delivery state stays in the
+task's own status, beside it. See
 [`.decisions/0002-reading-referenced-files.md`](.decisions/0002-reading-referenced-files.md).
 
 **Exit codes:** `0` success · `1` generic · `2` invalid args · `3` task not found · `4` task not ready · `5` already claimed · `7` lock failed

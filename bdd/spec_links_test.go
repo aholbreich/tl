@@ -10,9 +10,9 @@ import (
 	"github.com/cucumber/godog"
 )
 
-// --- spec-status.feature support ------------------------------------------
+// --- spec-links.feature support ------------------------------------------
 
-func initializeSpecStatusSteps(ctx *godog.ScenarioContext, w *world) {
+func initializeSpecLinkSteps(ctx *godog.ScenarioContext, w *world) {
 	// Fixtures
 	ctx.Step(`^the repository has a feature file "([^"]*)" with (\d+) scenarios?$`, w.writeFeatureFile)
 	ctx.Step(`^the repository has a feature file "([^"]*)" with (\d+) scenario and (\d+) scenario outline of (\d+) examples$`, w.writeFeatureFileWithOutline)

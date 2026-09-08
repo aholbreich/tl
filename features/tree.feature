@@ -92,12 +92,12 @@ Feature: Rendering the dependency graph
     Then the output colorizes the line for "task-don001" with "dim"
 
   # -------------------------------------------------------------------------
-  # Spec status — the same flag list and ready carry.
+  # Spec state, resolved as it is on list and ready.
   # -------------------------------------------------------------------------
   Scenario: The tree reports the spec of a referenced feature file
     Given a task "task-abc123" with reference "features/login.feature"
     And the repository has a feature file "features/login.feature" with 3 scenarios
-    When the developer runs `tl tree --spec-status`
+    When the developer runs `tl tree`
     Then the tree row for "task-abc123" contains "features/login.feature (3)"
 
   Scenario: A dependency carries its own spec in the tree
@@ -105,14 +105,13 @@ Feature: Rendering the dependency graph
     And a task "task-chi001" with reference "features/login.feature"
     And "task-par001" depends on "task-chi001"
     And the repository has a feature file "features/login.feature" with 2 scenarios
-    When the developer runs `tl tree task-par001 --spec-status`
+    When the developer runs `tl tree task-par001`
     Then the tree row for "task-chi001" contains "features/login.feature (2)"
 
-  Scenario: Plain tree does not resolve specs
-    Given a task "task-abc123" with reference "features/login.feature"
-    And the repository has a feature file "features/login.feature" with 3 scenarios
+  Scenario: A tree with no spec references draws no spec column
+    Given a task "task-abc123" with reference "src/auth/login.go"
     When the developer runs `tl tree`
-    Then the output does not contain "features/login.feature"
+    Then the output does not contain ".feature"
 
   # -------------------------------------------------------------------------
   # Closed tasks — hidden by default, like tl list.
@@ -151,8 +150,29 @@ Feature: Rendering the dependency graph
     Then the command exits with code 3
 
   # -------------------------------------------------------------------------
-  # JSON — nested children so consumers do not re-derive the graph.
+  # JSON — nested children so consumers do not re-derive the graph, and spec
+  # state at every depth so it is not resolved and then thrown away.
   # -------------------------------------------------------------------------
+
+  Scenario: JSON carries the spec of a root
+    Given a task "task-abc123" with reference "features/login.feature"
+    And the repository has a feature file "features/login.feature" with 3 scenarios
+    When the developer runs `tl tree --json`
+    Then the JSON tree root "task-abc123" has a spec entry for "features/login.feature"
+
+  Scenario: JSON carries the spec of a nested dependency
+    Given a task "task-par001" titled "Add RSS sources"
+    And a task "task-chi001" with reference "features/login.feature"
+    And "task-par001" depends on "task-chi001"
+    And the repository has a feature file "features/login.feature" with 2 scenarios
+    When the developer runs `tl tree task-par001 --json`
+    Then the JSON tree child "task-chi001" has a spec entry for "features/login.feature"
+
+  Scenario: JSON emits an empty spec array for a task with no spec reference
+    Given a task "task-lon001" titled "Standalone work"
+    When the developer runs `tl tree task-lon001 --json`
+    Then the JSON tree root "task-lon001" has an empty spec array
+
   Scenario: JSON nests each task's dependencies as children
     Given a task "task-par001" titled "Add RSS sources"
     And a task "task-chi001" titled "Subscribe to a URL"

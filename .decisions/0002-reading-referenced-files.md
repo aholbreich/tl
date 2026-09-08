@@ -1,6 +1,6 @@
 # 0002. Reading referenced files from read commands
 
-**Status:** Accepted (2026-09-08)
+**Status:** Accepted (2026-09-08), amended (2026-09-09)
 
 ## Context
 
@@ -115,6 +115,40 @@ the reader draws the join.
   references and no risk of `--fix` destroying links.
 - No ledger identifiers written into specification files.
 - No test execution, no build tooling, no report ingestion (PRD §4).
+
+## Amendment (2026-09-09): limit 2 reversed
+
+Limit 2 required an explicit `--spec-status` flag and promised that the
+default path reads nothing outside `.tl/`. That is withdrawn. Spec state is
+resolved unconditionally on `list`, `ready` and `tree`, and the flag is gone.
+
+**Why.** Limit 2 rested entirely on cost, and cost was asserted rather than
+measured. Measured on a ledger of 500 tasks each referencing a distinct
+feature file — 2 MB of Gherkin — `tl list` took 19 ms and the same command
+resolving every spec took 22 ms. Three milliseconds is not a budget worth
+building a flag around.
+
+The flag was also redundant with limit 1. Because the reference is the
+trigger, a project that writes no Gherkin has no matching references and
+resolves nothing, flag or no flag. The flag gated something that already
+gated itself, while hiding the feature from everyone who would benefit —
+and a capability nobody discovers is one that does not exist.
+
+**What replaces it.** The human-facing tables draw a spec column only when
+some listed task actually carries a spec reference, so a project without
+Gherkin sees byte-identical output to before the feature existed. In
+`--json`, `spec` is always an array and never null, which removes the
+awkward "null means the flag was not passed" encoding that limit 4 needed.
+
+**What this costs.** The predictability concern in the Context section now
+applies to the default path: the same ledger at the same commit renders
+differently against a dirty working tree. That is accepted as a stated
+property rather than a defect — the divergence between ledger and spec is
+the signal the feature exists to surface.
+
+Rejected alternative 4 below ("automatic in human output, explicit in
+JSON") is closer to the outcome than the decision that superseded it. It
+was rejected on the same unmeasured cost argument.
 
 ## Alternatives considered
 

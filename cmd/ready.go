@@ -15,7 +15,6 @@ import (
 func newReadyCmd() *cobra.Command {
 	var asJSON bool
 	var tag string
-	var specStatus bool
 	c := &cobra.Command{
 		Use:   "ready",
 		Short: "List tasks that are ready to be claimed",
@@ -41,7 +40,8 @@ func newReadyCmd() *cobra.Command {
 				ready = append(ready, t)
 			}
 
-			specs := resolveSpecsFor(ledger, ready, specStatus)
+			specs := resolveSpecsFor(ledger, ready)
+			showSpec := anySpecs(specs)
 
 			if asJSON {
 				enc := json.NewEncoder(cmd.OutOrStdout())
@@ -51,13 +51,13 @@ func newReadyCmd() *cobra.Command {
 
 			tw := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
 			header := "ID\tStatus\tPriority\tTitle"
-			if specStatus {
+			if showSpec {
 				header += "\tSpec"
 			}
 			fmt.Fprintln(tw, header)
 			for _, t := range ready {
 				fmt.Fprintf(tw, "%s\t%s\t%s\t%s", t.ID, t.Status, t.Priority, t.Title)
-				if specStatus {
+				if showSpec {
 					fmt.Fprintf(tw, "\t%s", specCell(specs[t.ID]))
 				}
 				fmt.Fprintln(tw)
@@ -67,7 +67,6 @@ func newReadyCmd() *cobra.Command {
 	}
 	c.Flags().BoolVar(&asJSON, "json", false, "Emit JSON output")
 	c.Flags().StringVar(&tag, "tag", "", "Only show tasks carrying this tag")
-	c.Flags().BoolVar(&specStatus, "spec-status", false, specStatusFlagUsage)
 	return c
 }
 

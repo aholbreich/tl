@@ -28,9 +28,9 @@ type compactTaskJSON struct {
 	Sections    map[string]string `json:"sections,omitempty"`
 }
 
-// compactTasksJSON renders tasks for bulk output. specs is nil unless
-// --spec-status was passed; a nil entry marshals to null, an empty non-nil
-// slice to [], which is how the schema stays stable across both.
+// compactTasksJSON renders tasks for bulk output. Every task carries a spec
+// entry: an array, empty when it references no specification. There is no
+// null case, so a consumer can index it without a presence check.
 func compactTasksJSON(tasks []*task.Task, specs map[string][]spec.Spec) []compactTaskJSON {
 	out := make([]compactTaskJSON, 0, len(tasks))
 	for _, t := range tasks {
