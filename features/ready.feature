@@ -63,6 +63,17 @@ Feature: List ready tasks
     And the JSON output contains title "Add login form validation"
     And the JSON output contains a priority for "task-abc123"
 
+  Scenario: Ready JSON carries the references of each queued task
+    Given a task "task-abc123" with references "src/auth/login.go" and "JIRA-1234"
+    When the agent runs `tl ready --json`
+    Then the JSON task "task-abc123" has a "references" array containing "src/auth/login.go"
+    And the JSON task "task-abc123" has a "references" array containing "JIRA-1234"
+
+  Scenario: Ready JSON emits an empty references array for a task without references
+    Given a task "task-abc123" with no references
+    When the agent runs `tl ready --json`
+    Then the JSON task "task-abc123" has an empty "references" array
+
   Scenario: Ready can be filtered to tasks carrying a specific tag
     Given the following tasks exist:
       | id          | status | tags        |

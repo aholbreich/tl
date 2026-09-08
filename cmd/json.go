@@ -17,6 +17,7 @@ type compactTaskJSON struct {
 	CreatedBy   string            `json:"created_by"`
 	Assignee    *string           `json:"assignee"`
 	DependsOn   []string          `json:"depends_on"`
+	References  []string          `json:"references"`
 	Claim       task.Claim        `json:"claim"`
 	Pending     *task.Pending     `json:"pending,omitempty"`
 	Tags        []string          `json:"tags"`
@@ -40,6 +41,7 @@ func compactTasksJSON(tasks []*task.Task) []compactTaskJSON {
 			CreatedBy:   t.CreatedBy,
 			Assignee:    t.Assignee,
 			DependsOn:   t.DependsOn,
+			References:  compactReferences(t.References),
 			Claim:       t.Claim,
 			Pending:     t.Pending,
 			Tags:        t.Tags,
@@ -49,4 +51,13 @@ func compactTasksJSON(tasks []*task.Task) []compactTaskJSON {
 		})
 	}
 	return out
+}
+
+// compactReferences guarantees an empty array rather than null, matching the
+// shape `tl show --json` emits for a task with no references.
+func compactReferences(refs []string) []string {
+	if refs == nil {
+		return []string{}
+	}
+	return refs
 }

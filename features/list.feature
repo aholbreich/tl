@@ -37,6 +37,17 @@ Feature: List tasks in the ledger
     And the JSON output does not contain a task with identifier "task-def456"
     And the JSON output does not contain a task with identifier "task-ghi789"
 
+  Scenario: JSON output carries the references of each listed task
+    Given a task "task-abc123" with references "src/auth/login.go" and "JIRA-1234"
+    When the developer runs `tl list --json`
+    Then the JSON task "task-abc123" has a "references" array containing "src/auth/login.go"
+    And the JSON task "task-abc123" has a "references" array containing "JIRA-1234"
+
+  Scenario: JSON output emits an empty references array for a task without references
+    Given a task "task-abc123" with no references
+    When the developer runs `tl list --json`
+    Then the JSON task "task-abc123" has an empty "references" array
+
   Scenario: Listing tasks with --all includes closed tasks
     Given the following tasks exist:
       | id          | status    | priority | title                     |

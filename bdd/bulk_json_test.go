@@ -15,6 +15,8 @@ func initializeBulkJSONSteps(ctx *godog.ScenarioContext, w *world) {
 	ctx.Step(`^the JSON task "([^"]*)" does not include field "([^"]*)"$`, w.jsonTaskDoesNotIncludeField)
 	ctx.Step(`^the JSON task "([^"]*)" has description "([^"]*)"$`, w.jsonTaskHasDescription)
 	ctx.Step(`^the JSON task "([^"]*)" contains a parsed "([^"]*)" note from "([^"]*)" with message "([^"]*)"$`, w.jsonTaskContainsParsedNote)
+	ctx.Step(`^the JSON task "([^"]*)" has a "references" array containing "([^"]*)"$`, w.jsonTaskReferencesContains)
+	ctx.Step(`^the JSON task "([^"]*)" has an empty "references" array$`, w.jsonTaskReferencesEmpty)
 }
 
 func (w *world) developerAsksForListJSON() error {
@@ -74,6 +76,49 @@ func (w *world) jsonTaskContainsParsedNote(id, kind, actor, message string) erro
 		}
 	}
 	return fmt.Errorf("JSON task %s notes do not contain %q note from %q with message %q; notes: %#v", id, kind, actor, message, notes)
+}
+
+func (w *world) jsonTaskReferencesContains(id, value string) error {
+	refs, err := w.jsonTaskReferences(id)
+	if err != nil {
+		return err
+	}
+	if !containsString(refs, value) {
+		return fmt.Errorf("JSON task %s references %v do not contain %q", id, refs, value)
+	}
+	return nil
+}
+
+func (w *world) jsonTaskReferencesEmpty(id string) error {
+	refs, err := w.jsonTaskReferences(id)
+	if err != nil {
+		return err
+	}
+	if len(refs) != 0 {
+		return fmt.Errorf("JSON task %s references %v, expected empty array", id, refs)
+	}
+	return nil
+}
+
+// jsonTaskReferences fails when the field is absent as well as when it is null,
+// so bulk output cannot silently drop references the way it once did.
+func (w *world) jsonTaskReferences(id string) ([]string, error) {
+	data, err := w.jsonObjectForTask(id)
+	if err != nil {
+		return nil, err
+	}
+	raw, ok := data["references"]
+	if !ok {
+		return nil, fmt.Errorf("JSON task %s is missing field \"references\"; task: %s", id, string(mustMarshal(data)))
+	}
+	if string(raw) == "null" {
+		return nil, fmt.Errorf("JSON task %s references is null, expected an array", id)
+	}
+	var refs []string
+	if err := json.Unmarshal(raw, &refs); err != nil {
+		return nil, fmt.Errorf("JSON task %s references is not a string array (%v)", id, err)
+	}
+	return refs, nil
 }
 
 func (w *world) jsonObjectForTask(id string) (map[string]json.RawMessage, error) {
