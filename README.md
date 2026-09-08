@@ -232,7 +232,7 @@ tl completion --install            # enable TAB completion for task IDs
 
 # Define work
 tl create "<title>" [-t type -p prio --tag x --ref r -d "..."]  # add a task
-tl refine <id> [-p prio -t title --edit]                # edit an existing task
+tl refine <id> [-p prio -t title --edit] [--actor name] # edit an existing task
 tl refine <id> [--add-ref r --remove-ref r]             # attach/detach references
 tl dep add <id> --on <id>                               # declare a dependency
 tl dep remove <id> --on <id>                            # drop one
@@ -247,7 +247,7 @@ tl close <id>                      # done and verified
 tl block <id> -m "..."             # external blocker; releases the claim
 tl unblock <id>                    # blocker cleared; back to open
 tl pending <id> --question "..."   # need a human decision; releases the claim
-tl resolve <id> --answer "..."     # human answers; task reopens
+tl resolve <id> --answer "..." [--actor name] # human answers; task reopens
 tl cancel <id> -m "..."            # won't be done
 tl remove <id> -m "..." [--force]  # delete a mistaken task file from the active ledger
 tl release <id>                    # step away cleanly (leave a note first)

@@ -7,7 +7,7 @@ A few facts that make the rest read more easily:
 
 - State lives in `.tl/` — `config.yaml`, a human-facing `README.md`, one Markdown file per task under `tasks/`, and an append-only `events.jsonl` log.
 - Mutating commands (`create`, `claim`, `note`, `close`, …) append a line to `events.jsonl`. Read commands (`list`, `show`, `ready`, `history`) take `--json`.
-- Identity resolves in order: `--actor` flag, then `TL_ACTOR`, `ACTOR_NAME`, then agent auto-detection. Set `TL_ACTOR` once per session and forget about it.
+- Identity resolves in order: `--actor` flag, then `TL_ACTOR`, `ACTOR_NAME`, `BEADS_ACTOR`, then agent auto-detection. Set `TL_ACTOR` once per session and forget about it.
 
 ```sh
 export TL_ACTOR=alex # or claude-code:auth, agent-a:backend, …
@@ -53,6 +53,9 @@ set at creation; `refine` doesn't touch them (at least yet).
 $ tl refine task-hfv -p high -t "Add login form validation (email + password)"
 Refined task task-hfv
 ```
+
+Pass `--actor alex` to attribute a refinement explicitly, including `--edit`
+and reference changes. Without the flag, the standard identity fallback applies.
 
 Declare a dependency when one task can't start until another finishes. `dep add` is silent on success.
 
@@ -140,9 +143,12 @@ Priority: high
 A human answers with `resolve`, which records the answer and reopens the task.
 
 ```sh
-$ tl resolve task-9jg --answer "Replace outright; legacy callers are all in this PR."
+$ tl resolve task-9jg --answer "Replace outright; legacy callers are all in this PR." --actor alex
 Resolved task-9jg
 ```
+
+`--actor alex` attributes both the answer note and the resolution event to Alex,
+even if the environment identifies a different actor.
 
 **Cancel** - the work won't be done. The reason is required and kept in the record.
 
