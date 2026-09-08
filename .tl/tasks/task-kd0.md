@@ -1,11 +1,11 @@
 ---
 id: task-kd0
 title: Recognize .feature references as specs, and surface them under --spec-status
-status: open
+status: done
 priority: medium
 type: task
 created_at: 2026-09-08T11:52:38Z
-updated_at: 2026-09-08T13:34:08Z
+updated_at: 2026-09-08T13:43:26Z
 created_by: claude
 assignee: null
 depends_on:
@@ -188,4 +188,6 @@ Whether tl should also *read* the referenced file to report its contents is a se
 
 Reported from rssb, which follows a BDD-first workflow: every feature starts as a `.feature` file before implementation exists. Tickets and specs are one-to-one there, but the ledger cannot express or query that relationship.
 
+## Notes
 
+- 2026-09-08T13:43:26Z [claude] note: Implemented. New internal/spec package resolves references that name specification files; .feature is the only suffix in the table today and the exported names talk about references, not Gherkin, so a second resolver slots in. tl show marks a spec reference '(spec)' by string rule only, so it still reads nothing outside .tl/. tl list --spec-status and tl ready --spec-status add a Spec column showing path, existence and scenario count; a Scenario Outline counts once, per the cosmetic open question in 0002. JSON gains a schema-stable 'spec' key: nil map from resolveSpecsFor means the flag was off, which marshals to null; a non-nil empty slice means resolved-but-none, which marshals to []. Tests: new features/spec-status.feature, 13 scenarios. Caught myself here — the suite filters on @implemented, so the file was silently skipped and the first green run proved nothing. Tagged it, then mutation-checked two behaviours: adding Examples: to the scenario keywords fails the outline count, and ignoring the enabled flag fails the null-when-not-passed scenario. Suite 265/265, go vet clean. README documents the flag alongside --dashboard, including the granularity ceiling and a jq example verified against a scratch ledger. Not done here and left to task-ahk: feature-level tags, which share the same file read.

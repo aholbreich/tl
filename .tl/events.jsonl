@@ -371,3 +371,6 @@
 {"time":"2026-09-08T13:35:06Z","event":"reference_added","task_id":"task-npt","actor":"claude","value":"cmd/refine.go"}
 {"time":"2026-09-08T13:35:06Z","event":"reference_added","task_id":"task-npt","actor":"claude","value":"features/resolve.feature"}
 {"time":"2026-09-08T13:35:06Z","event":"reference_added","task_id":"task-npt","actor":"claude","value":"features/actor.feature"}
+{"time":"2026-09-08T13:38:09Z","event":"claimed","task_id":"task-kd0","actor":"claude"}
+{"time":"2026-09-08T13:43:26Z","event":"note_added","task_id":"task-kd0","actor":"claude"}
+{"time":"2026-09-08T13:43:26Z","event":"closed","task_id":"task-kd0","actor":"claude"}
