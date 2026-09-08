@@ -1,11 +1,11 @@
 ---
 id: task-ahk
-title: Surface spec status from the feature file's own Gherkin tags
+title: Report the tags on a resolved spec, as data
 status: open
 priority: medium
 type: task
 created_at: 2026-09-08T11:53:17Z
-updated_at: 2026-09-08T11:53:17Z
+updated_at: 2026-09-08T13:15:09Z
 created_by: claude
 assignee: null
 depends_on:
@@ -23,9 +23,58 @@ references:
   - features/references.feature
   - task-kd0
   - task-1re
+  - task-thh
 ---
 
 ## Description
+
+## Problem
+
+A task overview that answers "what is specified, and how far along is it?" currently has to be assembled by hand from two sources: tl for ticket status, and the repository for what the spec says about itself.
+
+Once a spec reference resolves to a file or a scenario (task-kd0), the tags sitting on it are already there, already in version control, already reviewable in a diff. tl does not read them, so nobody can query them.
+
+## Proposed solution
+
+Where a task carries a spec reference, report the tags found on the resolved unit — feature-level tags for a file reference, scenario-level tags for an anchored one.
+
+```
+tl list --spec-status
+
+ID        Status  Spec                                          Tags
+task-ps0  open    features/list.feature                         @implemented
+task-7fi  open    features/tree.feature#Rendering a subtree     (untagged)
+task-kd0  open    -                                             -
+```
+
+The vocabulary is the project's, not tl's. tl reports the tags it finds; it does not define what `@implemented` means, does not require it, does not validate it against a list. A project using `@wip`, `@manual` or `@ignore` gets those reported instead, with no code change.
+
+## Tags and scenario resolution answer different questions
+
+An earlier draft of this ticket argued for tags *instead of* scenario resolution. That was the wrong frame — they are orthogonal, and neither is what a test runner gives you:
+
+| Signal | Answers | Does not answer |
+|---|---|---|
+| Scenario resolves (task-kd0) | does the spec for *this story* exist yet | whether it passes |
+| Tags on that unit (this ticket) | what the author asserts about it | whether the assertion is true |
+| Test run (out of scope) | whether it passes | — |
+
+Resolution is granular but silent about intent; a tag is a deliberate claim but says nothing about which story it covers. Together they answer "this story's scenario exists and the author has marked it ready"; separately, neither does.
+
+That tl cannot report pass/fail is a boundary, not a gap. Running a suite is squarely a non-goal — "AI agent execution itself", "long-running background workers", and by extension any build tooling. Ingesting a test report is a much larger commitment and should not be smuggled in through this ticket.
+
+## Design constraints
+
+- **Gated on decision 0002.** This assumes read commands may open files outside `.tl/`. If that lands as "doctor only" or "never", this ticket is rewritten or cancelled, not quietly implemented.
+- **Never on the default path.** Plain `tl list` must not become one file read per row.
+- **Degrade quietly.** Missing, unreadable or tagless resolves to "unknown", never an error. `tl doctor` owns complaining about dead references; a listing must not fail because someone deleted a feature file.
+- **Parse only as far as needed.** Feature-level tags are the lines immediately preceding `Feature:`; scenario-level tags precede `Scenario:`. No full Gherkin parser, no new dependency.
+- **Report, do not interpret.** No hardcoded meaning for any tag string, `@implemented` included.
+- **Tags are a list, not a value.** A scenario may carry several. Do not collapse to one.
+
+## On the task-hwb prerequisite
+
+task-hwb documents tl's own `@implemented` convention. It is worth doing, but it is no longer a hard prerequisite for this ticket: since tl assigns no meaning to any tag, nothing here depends on that convention being written down. Keeping the dependency is a choice about dogfood tidiness, not a technical constraint — drop it if it blocks progress.
 
 ## Problem
 
@@ -67,3 +116,4 @@ A tag is a claim the author makes deliberately, in version control, reviewable i
 ## Prerequisite
 
 The `@implemented` convention is currently undocumented — see the guidelines ticket. It should be written down before tl builds behaviour on top of it.
+

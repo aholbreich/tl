@@ -1,11 +1,11 @@
 ---
 id: task-1re
 title: Should tl read referenced spec files at display time?
-status: open
+status: pending_human
 priority: medium
 type: decision
 created_at: 2026-09-08T11:52:57Z
-updated_at: 2026-09-08T11:53:38Z
+updated_at: 2026-09-08T13:15:50Z
 created_by: claude
 assignee: null
 depends_on: []
@@ -14,12 +14,18 @@ claim:
   claimed_at: null
   expires_at: null
   heartbeat_at: null
+pending:
+  question: 'Decision 0002 is drafted at .decisions/0002-reading-referenced-files.md, proposing that read commands MAY open referenced files under four limits: the reference is the trigger (no project-level Gherkin detection); existence is a cheap stat but content parsing happens only for anchored refs or behind a flag; enrichment is automatic in human output but schema-stable in JSON; and tl reports structure only, never deciding what a tag means. Accept as drafted, or fall back to alternative 2 (doctor only)? Three open questions inside need your call too: whether a missing referenced file reads as ''no spec'' or ''broken link'', what tl tree renders for an unresolved spec, and which resolver is second.'
+  requester: claude
+  requested_at: 2026-09-08T13:15:50Z
 tags: []
 references:
   - docs/PRD.md
   - internal/doctor/doctor.go
   - task-kd0
   - task-ahk
+  - .decisions/0002-reading-referenced-files.md
+  - task-thh
 ---
 
 ## Description
