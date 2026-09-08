@@ -250,6 +250,7 @@ tl release <id>                    # step away cleanly (leave a note first)
 # Inspect
 tl list [--all --status s --tag t --mine] [--type t --priority p] [--json]
 tl list --dashboard [--tag t] > tasks.md  # regeneratable Markdown overview
+tl list --spec-status              # add a column for referenced .feature specs
 tl show <id> [--json]              # full task detail
 tl history [<id>] [--json]         # event-by-event audit trail
 tl stale                           # claims whose lease has expired
@@ -288,6 +289,45 @@ tl list --dashboard --tag docs > docs-tasks.md
 
 There is no dedicated area or due-date field; use tags to scope areas of work.
 Watch mode and dependency-tree rendering are not part of the dashboard.
+
+### Spec status
+
+A reference whose path ends in `.feature` is treated as a **spec reference**.
+That is the whole rule — there is no new flag on `tl create`, no frontmatter
+field and no configuration. `tl show` marks such a reference `(spec)`, which
+costs nothing because it is a string test.
+
+`tl list --spec-status` (and `tl ready --spec-status`) adds a column showing
+each referenced spec, whether the file is there, and how many scenarios it
+holds. A `Scenario Outline` counts once, however many `Examples` rows it has.
+
+```
+ID        Status  Title                     Spec
+task-7fi  open    Add tl tree               features/tree.feature (missing)
+task-cys  open    Add tl agents --remove    features/agents.feature (14)
+task-wke  open    Add --type field          -
+```
+
+This is the **only** path that opens a file outside `.tl/`. Plain `tl list`,
+`tl ready` and `tl show` read the ledger and nothing else, so the default
+output never depends on the state of your working tree. A missing or
+unreadable spec renders as `(missing)` or `(unknown)` rather than failing the
+listing — `tl doctor` is what complains about dead references.
+
+In `--json`, the `spec` key is always present: `null` when the flag was not
+passed, an array when it was, so a consumer's schema never changes based on
+which flags were used or on whether the project writes Gherkin.
+
+```sh
+tl list --spec-status --json | jq -r '.[] | select(.spec[]?.state == "missing") | .id'
+```
+
+**What this does not tell you.** The link is to a *file*. A feature file
+usually describes a capability while a task is a slice of one, so a spec
+column says "this task points at a spec that exists", not "this task's
+behaviour is specified" — and never that the work is done. Delivery state
+stays in the task's own status, beside it. See
+[`.decisions/0002-reading-referenced-files.md`](.decisions/0002-reading-referenced-files.md).
 
 **Exit codes:** `0` success · `1` generic · `2` invalid args · `3` task not found · `4` task not ready · `5` already claimed · `7` lock failed
 
