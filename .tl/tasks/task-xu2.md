@@ -5,7 +5,7 @@ status: open
 priority: medium
 type: task
 created_at: 2026-09-08T19:30:34Z
-updated_at: 2026-09-08T19:30:34Z
+updated_at: 2026-09-08T19:48:29Z
 created_by: claude
 assignee: null
 depends_on: []
@@ -46,3 +46,8 @@ The variable was deliberately left unset: enabling the job without the token wou
 ## Acceptance
 
 A tagged release publishes the package to aholbreich/pacman-repo without manual intervention, and a re-run of that same job reports 'already in the repository; nothing to publish' rather than committing a rebuilt package.
+
+## Notes
+
+- 2026-09-08T19:48:29Z [claude] note: Container path now verified locally. Docker was started, and the job was simulated step for step in archlinux:base-devel against a read-only mount of the repository: pacman -Syu installs git/nodejs/pacman-contrib (node v26.8.1, so actions/checkout can start), a copy stands in for the checkout, a created builder user owns the workspace and runs build-pacman-pkg.sh producing tl-bin-0.12.0-1-x86_64.pkg.tar.zst, and update-pacman-repo.sh runs as root exactly as the job does. The published database came out as a real gzip file rather than a symlink, and a second publish reported 'already in the repository; nothing to publish'. So both concerns this ticket was opened for — Node before checkout, and non-root makepkg — are settled. What remains is purely credentials: add secret PACMAN_REPO_TOKEN with write access to aholbreich/pacman-repo, then set variable UPDATE_PACMAN_REPO=true. The variable is still deliberately unset, since enabling the job without the token would fail the next release. Acceptance is unchanged: a tagged release should publish without intervention, and a re-run of that job should report nothing to publish.
+- 2026-09-08T19:48:29Z [claude] note: System is on a clean install: tl-bin removed and reinstalled from the repository rather than upgraded in place, so nothing survives from the original local build. tl 0.12.0, Validated By SHA-256 Sum, no orphaned packages, no unowned tl files under /usr, and no shadowing copies in ~/bin, ~/.local/bin or /usr/local/bin. The stale tl-bin-debug 0.9.0-1 is gone.
